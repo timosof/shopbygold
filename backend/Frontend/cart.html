@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - ShopByGold</title>
+    <link href="output.css" rel="stylesheet">
+    <link href="mobile.css" rel="stylesheet">
+    <!-- favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon.svg">
+</head>
+
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md p-4 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto flex justify-between items-center gap-2">
+            <!-- Logo smaller on mobile -->
+            <a href="shop.html" class="text-2xl font-bold text-yellow-600 flex-shrink-0" id="nav-logo">ShopByGold</a>
+
+            <!-- Search - shows on all screens, small on mobile -->
+            <div class="flex-1 max-w-xs md:max-w-md mx-2">
+                <input id="nav-search-input" type="text" placeholder="Search..."
+                    class="w-full border rounded-full px-3 py-3 text-sm bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+            </div>
+
+            <!-- Desktop Links -->
+            <div id="desktop-links" class="flex gap-6 items-center">
+                <a href="shop.html" class="text-yellow-600 font-semibold">Shop</a>
+                <a id="ordersLink" href="orders.html" class="hidden text-gray-700 hover:text-yellow-600">My Orders</a>
+                <a id="adminLink" href="admin.html" class="hidden text-blue-600 hover:underline">Admin</a>
+                <a id="loginLink" href="login.html" class="text-gray-700 hover:text-yellow-600">Login</a>
+                <a id="registerLink" href="register.html"
+                    class="hidden text-gray-700 hover:text-yellow-600">Register</a>
+                <span id="username" class="hidden text-gray-700"></span>
+                <button id="logoutBtn" onclick="logout()" class="hidden text-red-500 hover:underline">Logout</button>
+                <a href="cart.html" class="relative">🛒<span id="cart-count"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span></a>
+            </div>
+
+            <!-- Hamburger - mobile only -->
+            <button id="hamburger-btn"
+                class="hidden text-2xl bg-gray-100 rounded-full w-9 h-9 flex items-center justify-center">☰</button>
+        </div>
+
+        <!-- MOBILE MENU - links downward -->
+        <div id="mobile-menu" class="hidden bg-white border-t shadow-lg absolute left-0 top-full w-full p-4 z-50">
+            <a href="shop.html" class="py-3 border-b">Shop</a>
+            <a id="m-ordersLink" href="orders.html" class="hidden py-3 border-b">My Orders</a>
+            <a id="m-adminLink" href="admin.html" class="hidden py-3 border-b text-blue-600">Admin</a>
+            <!-- <a href="cart.html" class="py-3 border-b">Cart</a> -->
+            <a id="m-loginLink" href="login.html" class="py-3 border-b">Login</a>
+            <a id="m-registerLink" href="register.html" class="hidden py-3 border-b">Register</a>
+            <span id="m-username" class="hidden py-3 border-b font-semibold"></span>
+            <button id="m-logoutBtn" onclick="logout()" class="hidden py-3 text-left text-red-500">Logout</button>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto mt-8 px-4 pb-10">
+        <h1 class="text-3xl font-bold mb-8">Shopping Cart</h1>
+
+        <div id="loading" class="text-center py-20 text-gray-500">Loading cart ...</div>
+
+        <div id="cart-empty" class="hidden text-center py-20">
+            <p class="text-gray-500 text-xl mb-4">Your cart is empty</p>
+            <a href="shop.html" class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600">Continue
+                Shopping</a>
+        </div>
+
+        <div id="cart-content" class="hidden grid lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div id="cart-items" class="space-y-4"></div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md h-fit">
+                <h2 class="text-xl font-bold mb-4">Order Summary</h2>
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between"><span>Subtotal:</span><span id="subtotal">NGN 0</span></div>
+                    <div class="flex justify-between font-bold text-lg border-t pt-2"><span>Total:</span><span
+                            id="total">NGN 0</span></div>
+                </div>
+                <button onclick="checkout()" id="checkout-btn"
+                    class="w-full bg-yellow-500 text-white py-3 rounded hover:bg-yellow-600 font-semibold">
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script src="js/navbar.js"></script>
+    <script>
+        let backendCart = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'login.html'; return; }
+            loadCartFromBackend();
+        });
+
+        async function loadCartFromBackend() {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch('/api/cart', { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                console.log('CART FROM BACKEND:', data);
+
+                //  backend returns cart.to_dict() = { id, user_id, items: [...], total? }
+                let items = data.items || data.cart?.items || [];
+                let total = data.total || data.cart?.total || 0;
+                if (!total) {
+                    total = items.reduce((s,i)=> s + ( (i.product?.price||i.price||0) * i.quantity ), 0);
+                }
+                backendCart = { id: data.id, items, total };
+
+                document.getElementById('loading').classList.add('hidden');
+                if (items.length === 0) {
+                    document.getElementById('cart-empty').classList.remove('hidden');
+                    document.getElementById('cart-content').classList.add('hidden');
+                    return;
+                }
+                document.getElementById('cart-empty').classList.add('hidden');
+                document.getElementById('cart-content').classList.remove('hidden');
+                renderCartItems();
+                updateCartCount();
+            } catch(e) {
+                console.error(e);
+                document.getElementById('loading').textContent = 'Failed to load cart';
+            }
+        }
+
+        function renderCartItems() {
+            const div = document.getElementById('cart-items');
+            div.innerHTML = backendCart.items.map(item => {
+                const p = item.product || {};
+                const name = p.name || item.product_name || 'Product';
+                const price = p.price || item.price || 0;
+                const img = p.image_url || 'https://via.placeholder.com/100';
+                const qty = item.quantity;
+                const itemId = item.id;
+
+                return `<div class="bg-white p-4 rounded-lg shadow-md flex gap-4">
+                    <img src="${img}" class="w-24 h-24 object-cover rounded">
+                    <div class="flex-1">
+                        <h3 class="font-bold">${name}</h3>
+                        <p class="text-yellow-600 font-semibold">NGN ${price}</p>
+                        <div class="flex items-center gap-3 mt-2">
+                            <button onclick="updateQty(${itemId}, ${qty-1})" class="bg-gray-200 px-3 py-1 rounded">-</button>
+                            <span class="font-semibold">${qty}</span>
+                            <button onclick="updateQty(${itemId}, ${qty+1})" class="bg-gray-200 px-3 py-1 rounded">+</button>
+                            <button onclick="removeItem(${itemId})" class="text-red-500 ml-auto">Remove</button>
+                        </div>
+                    </div>
+                    <div class="font-bold">NGN ${(price*qty).toFixed(2)}</div>
+                </div>`;
+            }).join('');
+            document.getElementById('subtotal').textContent = 'NGN ' + backendCart.total.toFixed(2);
+            document.getElementById('total').textContent = 'NGN ' + backendCart.total.toFixed(2);
+        }
+
+        // CORRECT FOR YOUR BACKEND
+        async function updateQty(itemId, newQty) {
+            const token = localStorage.getItem('token');
+            console.log('Updating item', itemId, 'to qty', newQty);
+            const res = await fetch('/api/cart/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ item_id: itemId, quantity: newQty })
+            });
+            const data = await res.json();
+            console.log('Update response:', data);
+            loadCartFromBackend();
+        }
+
+        async function removeItem(itemId) {
+            const token = localStorage.getItem('token');
+            console.log('Removing item', itemId);
+            const res = await fetch('/api/cart/remove/' + itemId, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            console.log('Remove response:', data);
+            loadCartFromBackend();
+        }
+
+        function checkout() { window.location.href = 'checkout.html'; }
+
+        document.getElementById('hamburger-btn').onclick = () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+            document.getElementById('mobile-menu').classList.toggle('flex-col');
+        }
+        document.getElementById('nav-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') { const q = e.target.value.trim(); window.location.href = q ? 'shop.html?search=' + encodeURIComponent(q) : 'shop.html'; }
+        });
+    </script>
+</body>
+
+</html>

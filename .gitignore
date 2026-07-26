@@ -1,0 +1,24 @@
+# Secrets - NEVER upload
+.env
+backend/.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+instance/
+*.db
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Frontend
+node_modules/backend/venv/ 
+backend/instance/ 

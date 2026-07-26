@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ShopByGold</title>
+    <link href="output.css" rel="stylesheet">
+    <link href="mobile.css" rel="stylesheet">
+
+    <!-- favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon.svg">
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-md w-96">
+        <h1 class="text-2xl font-bold mb-6 text-center text-yellow-600">Login to ShopByGold</h1>
+
+        <div id="error" class="hidden bg-red-100 text-red-700 p-3 rounded mb-4"></div>
+
+        <form id="loginForm">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Email</label>
+                <input type="email" id="email" class="w-full p-2 border rounded" required>
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 mb-2">Password</label>
+                <input type="password" id="password" class="w-full p-2 border rounded" required>
+            </div>
+            <button type="submit" class="w-full bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600">
+                Login
+            </button>
+        </form>
+
+        <p class="text-center mt-4 text-sm">
+            <a href="forgot-password.html" class="text-yellow-600 hover:underline">Forgot Password?</a>
+        </p>
+
+        <p class="text-center mt-4 text-gray-600">
+            Don't have an account? <a href="register.html" class="text-yellow-600 hover:underline">Register</a>
+        </p>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const errorDiv = document.getElementById('error');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorDiv.classList.add('hidden');
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // FIXED: Backend returns access_token, not token
+                    localStorage.setItem('token', data.access_token); // CHANGED
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('username', data.user.username);
+                    localStorage.setItem('user_role', data.user.role);
+                    localStorage.setItem('user_id', data.user.id); // ADD THIS
+
+                    // CHANGED: Go to shop.html
+                    window.location.href = 'shop.html';
+                } else {
+                    errorDiv.textContent = data.msg || 'Invalid email or password.';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Server error. Please try again later.';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>

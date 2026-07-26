@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verifying Payment...</title>
+    <link href="output.css" rel="stylesheet">
+    <link href="mobile.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-md text-center">
+        <div id="loading">
+            <h2 class="text-2xl font-bold mb-4">Verifying your payment...</h2>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div>
+        </div>
+        <div id="success" class="hidden">
+            <h2 class="text-2xl font-bold text-green-600 mb-4">✅ Payment Successful!</h2>
+            <p class="mb-4">Order #<span id="order-id"></span> confirmed</p>
+            <a href="/shop.html" class="bg-yellow-500 text-white px-6 py-2 rounded">Continue Shopping</a>
+        </div>
+        <div id="error" class="hidden">
+            <h2 class="text-2xl font-bold text-red-600 mb-4">❌ Payment Failed</h2>
+            <p id="error-msg" class="mb-4"></p>
+            <a href="/shop.html" class="bg-gray-500 text-white px-6 py-2 rounded">Back to Shop</a>
+        </div>
+    </div>
+
+    <script>
+        async function verifyPayment() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const reference = urlParams.get('reference');
+            const token = localStorage.getItem('token');
+
+            if (!reference || !token) {
+                showError('Invalid payment session');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/orders/paystack/verify/${reference}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    // FIXED: Clear backend cart + localStorage
+                    try {
+                        await fetch('/api/cart/clear', {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                    } catch(e) { console.log('clear cart error', e) }
+                    localStorage.removeItem('cart');
+                    
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('success').classList.remove('hidden');
+                    document.getElementById('order-id').textContent = data.order_id || data.id || reference;
+                } else {
+                    showError(data.msg || 'Verification failed');
+                }
+            } catch (err) {
+                console.error(err);
+                showError('Verification failed: ' + err.message);
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error').classList.remove('hidden');
+            document.getElementById('error-msg').textContent = msg;
+        }
+
+        verifyPayment();
+    </script>
+</body>
+</html>

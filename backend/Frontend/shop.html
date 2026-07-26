@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop - ShopByGold</title>
+    <link href="output.css" rel="stylesheet">
+    <link href="mobile.css" rel="stylesheet">
+
+    <!-- favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon.svg">
+</head>
+
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md p-4 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto flex justify-between items-center gap-2">
+            <!-- Logo smaller on mobile -->
+            <a href="shop.html" class="text-2xl font-bold text-yellow-600 flex-shrink-0" id="nav-logo">ShopByGold</a>
+
+            <!-- Search - shows on all screens, small on mobile -->
+            <div class="flex-1 max-w-xs md:max-w-md mx-2">
+                <input id="nav-search-input" type="text" placeholder="Search..."
+                    class="w-full border rounded-full px-3 py-3 text-sm bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+            </div>
+
+            <!-- Desktop Links -->
+            <div id="desktop-links" class="flex gap-6 items-center">
+                <!-- <a href="shop.html" class="text-yellow-600 font-semibold">Shop</a> -->
+                <a id="ordersLink" href="orders.html" class="hidden text-gray-700 hover:text-yellow-600">My Orders</a>
+                <a id="adminLink" href="admin.html" class="hidden text-blue-600 hover:underline">Admin</a>
+                <a id="loginLink" href="login.html" class="text-gray-700 hover:text-yellow-600">Login</a>
+                <a id="registerLink" href="register.html"
+                    class="hidden text-gray-700 hover:text-yellow-600">Register</a>
+                <span id="username" class="hidden text-gray-700"></span>
+                <button id="logoutBtn" onclick="logout()" class="hidden text-red-500 hover:underline">Logout</button>
+                <a href="cart.html" class="relative">🛒<span id="cart-count"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span></a>
+            </div>
+
+            <!-- Hamburger - mobile only -->
+            <button id="hamburger-btn"
+                class="hidden text-2xl bg-gray-100 rounded-full w-9 h-9 flex items-center justify-center">☰</button>
+        </div>
+
+        <!-- MOBILE MENU -->
+        <div id="mobile-menu" class="hidden bg-white border-t shadow-lg absolute left-0 top-full w-full p-4 z-50">
+            <!-- <a href="shop.html" class="py-3 border-b">Shop</a> -->
+            <a id="m-ordersLink" href="orders.html" class="hidden py-3 border-b">My Orders</a>
+            <a id="m-adminLink" href="admin.html" class="hidden py-3 border-b text-blue-600">Admin</a>
+            <a href="cart.html" class="py-3 border-b">Cart</a>
+            <a id="m-loginLink" href="login.html" class="py-3 border-b">Login</a>
+            <a id="m-registerLink" href="register.html" class="hidden py-3 border-b">Register</a>
+            <span id="m-username" class="hidden py-3 border-b font-semibold"></span>
+            <button id="m-logoutBtn" onclick="logout()" class="hidden py-3 text-left text-red-500">Logout</button>
+        </div>
+    </nav>
+
+    <!-- HERO SLIDER - REPLACE YOUR WELCOME CARD WITH THIS -->
+    <div class="hero-slider" id="heroSlider" style="display:none">
+        <div class="slides" id="slides"></div>
+        <button class="slider-btn prev" onclick="moveSlide(-1)">&#10094;</button>
+        <button class="slider-btn next" onclick="moveSlide(1)">&#10095;</button>
+        <div class="dots" id="dots"></div>
+    </div>
+
+    <style>
+        .hero-slider {
+            position: relative;
+            width: auto;
+            margin: 0 16px 24px 16px;
+            height: 340px;
+            overflow: hidden;
+            margin-top: 30px;
+            border-radius: 16px;
+            background: #fff8e7;
+        }
+
+        .slides {
+            display: flex;
+            height: 100%;
+            transition: transform 0.6s ease;
+            width: 100%;
+        }
+
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .slide-content {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            padding: 18px 28px;
+            border-radius: 12px;
+            text-align: center;
+            z-index: 2;
+            color: #fff;
+            max-width: 90%;
+        }
+
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        .prev {
+            left: 12px
+        }
+
+        .next {
+            right: 12px
+        }
+
+        .dots {
+            position: absolute;
+            bottom: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 3;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            cursor: pointer
+        }
+
+        .dot.active {
+            background: #d69e2e
+        }
+
+        @media(max-width:768px) {
+            .hero-slider {
+                height: 200px;
+                margin: 0 12px 16px 12px;
+                border-radius: 12px;
+                margin-top: 20px;
+            }
+        }
+
+        @media(min-width: 1024px) {
+            .hero-slider {
+                margin: 0 32px 24px 32px;
+                margin-top: 20px;
+            }
+        }
+    </style>
+
+    <div class="max-w-6xl mx-auto mt-8 px-4 pb-10">
+        <!-- <h1 class="text-3xl font-bold mb-8">All Products</h1> -->
+        <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        <div id="loading" class="text-center py-10 text-gray-500">Loading products...</div>
+    </div>
+
+    <!-- SHARED NAV + CART LOGIC -->
+    <script src="js/navbar.js"></script>
+
+    <script>
+        // loads products from backend, handles search query if present
+
+        function getImageUrl(url) {
+            if (!url) return 'https://via.placeholder.com/300';
+            if (url.startsWith('http')) return url; // Cloudinary - use directly
+            // Old local uploads - will work locally, but will break on Koyeb anyway
+            return url;
+        }
+        async function loadProducts() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const q = params.get('search');
+
+                let url = '/api/products/';
+                let titleEl = document.querySelector('h1.text-3xl');
+
+                if (q) {
+                    url = '/api/products/search?q=' + encodeURIComponent(q);
+                    if (titleEl) titleEl.textContent = 'Search results for "' + q + '"';
+                    console.log("Searching for:", q);
+                } else {
+                    if (titleEl) titleEl.textContent = 'All Products';
+                }
+
+                const res = await fetch(url);
+                const products = await res.json();
+                console.log("Got products:", products.length);
+
+                const grid = document.getElementById('products-grid');
+                const loading = document.getElementById('loading');
+                loading.style.display = 'none';
+
+                if (products.length === 0) {
+                    grid.innerHTML = `<div class="col-span-4 text-center py-20">
+                <p class="text-xl mb-2">No products found for "<b>${q}</b>"</p>
+                <a href="shop.html" class="text-yellow-600 underline">Clear search → Show all</a>
+            </div>`;
+                    return;
+                }
+
+                grid.innerHTML = products.map(function (p) {
+                    const isOut = p.stock <= 0;
+                    return '<div class="bg-white rounded-lg shadow-md overflow-hidden">' +
+                        '<div onclick="window.location.href=\'product.html?id=' + p.id + '\'" class="cursor-pointer">' +
+                        '<img src="' + getImageUrl(p.image_url) + '" class="w-full h-48 object-cover">' +
+                        '<div class="p-4">' +
+                        '<h3 class="font-bold text-lg mb-2">' + p.name + '</h3>' +
+                        '<p class="text-gray-600 text-sm mb-2">' + (p.description || '') + '</p>' +
+                        '<p class="text-gray-500 text-xs mb-3">Stock: ' + p.stock + '</p>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="px-4 pb-4">' +
+                        '<div class="flex gap-2 items-center mb-2">' +
+                        '<label class="text-sm">Qty:</label>' +
+                        '<input type="number" id="qty-' + p.id + '" value="1" min="1" max="' + p.stock + '" class="w-16 border rounded px-2 py-1 text-sm">' +
+                        '</div>' +
+                        '<div class="flex justify-between items-center">' +
+                        '<span class="text-xl font-bold text-yellow-600">NGN ' + p.price + '</span>' +
+                        '<button ' + (isOut ? 'disabled' : '') + ' onclick="handleAdd(' + p.id + ')" class="' + (isOut ? 'bg-gray-400 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600') + ' text-white px-4 py-2 rounded">' +
+                        (p.stock === 0 ? 'Sold Out' : 'Add to Cart') +
+                        '</button>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                }).join('');
+            } catch (err) {
+                document.getElementById('loading').textContent = 'Oops! Something went wrong.';
+                console.error(err);
+            }
+        }
+
+        // handles adding product to cart with specified quantity
+        async function handleAdd(productId) {
+            const qtyInput = document.getElementById('qty-' + productId);
+            const qty = parseInt(qtyInput.value) || 1;
+
+            // 1. Block sold out on frontend
+            if (qtyInput.max == 0) {
+                alert('This item is sold out');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login first');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const res = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ product_id: productId, quantity: qty })
+            });
+
+            const data = await res.json();
+
+            // 2. Show backend error (Sold out / Only 2 left)
+            if (!res.ok) {
+                alert(data.msg || 'Failed to add');
+                return;
+            }
+
+            updateCartCount();
+            alert('Added to cart!');
+        }
+
+        loadProducts();
+
+        document.getElementById('hamburger-btn').onclick = () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+            document.getElementById('mobile-menu').classList.toggle('flex-col');
+        }
+        document.getElementById('nav-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') { const q = e.target.value.trim(); window.location.href = q ? 'shop.html?search=' + encodeURIComponent(q) : 'shop.html'; }
+        });
+
+
+        let currentIndex = 0;
+        let autoSlide;
+        async function loadSliders() {
+            try {
+                const res = await fetch('/api/sliders');
+                const sliders = await res.json();
+                console.log("SLIDERS FROM API:", sliders); // CHECK THIS IN F12 CONSOLE
+
+                if (!sliders || sliders.length === 0 || sliders[0].id === 0 && !sliders[0].image_url) {
+                    // No real sliders yet - show default welcome
+                    document.getElementById('heroSlider').innerHTML = `
+        <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff8e7">
+          <h2 style="font-size:28px;font-weight:700">Welcome to ShopByGold</h2>
+          <p>Let Get The Shopping Started!</p>
+        </div>`;
+                    document.getElementById('heroSlider').style.display = 'block';
+                    return;
+                }
+
+                document.getElementById('heroSlider').style.display = 'block';
+                const slidesEl = document.getElementById('slides');
+                const dotsEl = document.getElementById('dots');
+
+                slidesEl.innerHTML = sliders.map(s => `
+      <div class="slide">
+        <img src="${s.image_url}" alt="${s.title}" onerror="console.error('FAILED TO LOAD:', this.src); this.style.border='3px solid red'">
+        <div class="slide-content">
+          <h2 style="font-size:24px;font-weight:700">${s.title}</h2>
+          <p>${s.subtitle || ''}</p>
+          ${s.link ? `<a href="${s.link}" style="display:inline-block;margin-top:8px;background:#000;color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none">Shop Now</a>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+                dotsEl.innerHTML = sliders.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>`).join('');
+                startAutoSlide();
+            } catch (e) { console.error("Slider load failed", e); }
+        }
+        function updateSlider() {
+            document.getElementById('slides').style.transform = `translateX(-${currentIndex * 100}%)`;
+            document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentIndex));
+        }
+        function moveSlide(dir) {
+            const total = document.querySelectorAll('.slide').length;
+            if (!total) return;
+            currentIndex = (currentIndex + dir + total) % total;
+            updateSlider();
+        }
+        function goToSlide(i) { currentIndex = i; updateSlider(); }
+        function startAutoSlide() {
+            clearInterval(autoSlide);
+            autoSlide = setInterval(() => moveSlide(1), 4000);
+        }
+        loadSliders();
+
+    </script>
+</body>
+
+</html>

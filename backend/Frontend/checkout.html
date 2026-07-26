@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - ShopByGold</title>
+    <link href="output.css" rel="stylesheet">
+    <link href="mobile.css" rel="stylesheet">
+
+    <!-- favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon.svg">
+</head>
+
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md p-4 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto flex justify-between items-center gap-2">
+            <!-- Logo smaller on mobile -->
+            <a href="shop.html" class="text-2xl font-bold text-yellow-600 flex-shrink-0" id="nav-logo">ShopByGold</a>
+
+            <!-- Search - shows on all screens, small on mobile -->
+            <div class="flex-1 max-w-xs md:max-w-md mx-2">
+                <input id="nav-search-input" type="text" placeholder="Search..."
+                    class="w-full border rounded-full px-3 py-3 text-sm bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+            </div>
+
+            <!-- Desktop Links -->
+            <div id="desktop-links" class="flex gap-6 items-center">
+                <a href="shop.html" class="text-yellow-600 font-semibold">Shop</a>
+                <a id="ordersLink" href="orders.html" class="hidden text-gray-700 hover:text-yellow-600">My Orders</a>
+                <a id="adminLink" href="admin.html" class="hidden text-blue-600 hover:underline">Admin</a>
+                <a id="loginLink" href="login.html" class="text-gray-700 hover:text-yellow-600">Login</a>
+                <a id="registerLink" href="register.html"
+                    class="hidden text-gray-700 hover:text-yellow-600">Register</a>
+                <span id="username" class="hidden text-gray-700"></span>
+                <button id="logoutBtn" onclick="logout()" class="hidden text-red-500 hover:underline">Logout</button>
+                <a href="cart.html" class="relative">🛒<span id="cart-count"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span></a>
+            </div>
+
+            <!-- Hamburger - mobile only -->
+            <button id="hamburger-btn"
+                class="hidden text-2xl bg-gray-100 rounded-full w-9 h-9 flex items-center justify-center">☰</button>
+        </div>
+
+        <!-- MOBILE MENU - links downward -->
+        <div id="mobile-menu" class="hidden bg-white border-t shadow-lg absolute left-0 top-full w-full p-4 z-50">
+            <!-- <a href="shop.html" class="py-3 border-b">Shop</a> -->
+            <a id="m-ordersLink" href="orders.html" class="hidden py-3 border-b">My Orders</a>
+            <a id="m-adminLink" href="admin.html" class="hidden py-3 border-b text-blue-600">Admin</a>
+            <a href="cart.html" class="py-3 border-b">Cart</a>
+            <a id="m-loginLink" href="login.html" class="py-3 border-b">Login</a>
+            <a id="m-registerLink" href="register.html" class="hidden py-3 border-b">Register</a>
+            <span id="m-username" class="hidden py-3 border-b font-semibold"></span>
+            <button id="m-logoutBtn" onclick="logout()" class="hidden py-3 text-left text-red-500">Logout</button>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto mt-8 px-4 pb-10">
+        <h1 class="text-3xl font-bold mb-8">Checkout</h1>
+        <div class="grid lg:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-bold mb-4">Shipping Address</h2>
+                <form id="checkout-form" class="space-y-4">
+                    <div><label class="block text-gray-700 mb-2">Full Name *</label><input type="text" id="fullname"
+                            class="w-full p-3 border rounded" required></div>
+                    <div><label class="block text-gray-700 mb-2">Phone Number *</label><input type="tel" id="phone"
+                            class="w-full p-3 border rounded" required></div>
+                    <div><label class="block text-gray-700 mb-2">Delivery Address *</label><textarea id="address"
+                            class="w-full p-3 border rounded" rows="3" required
+                            placeholder="House no, Street, City, State"></textarea></div>
+                    <div>
+                        <label class="block text-gray-700 mb-2">Delivery State *</label>
+                        <select id="delivery-state" class="w-full p-3 border rounded" required>
+                            <option value="">Select State</option>
+                            <option value="Abia">Abia</option>
+                            <option value="Adamawa">Adamawa</option>
+                            <option value="Akwa Ibom">Akwa Ibom</option>
+                            <option value="Anambra">Anambra</option>
+                            <option value="Bauchi">Bauchi</option>
+                            <option value="Bayelsa">Bayelsa</option>
+                            <option value="Benue">Benue</option>
+                            <option value="Borno">Borno</option>
+                            <option value="Cross River">Cross River</option>
+                            <option value="Delta">Delta</option>
+                            <option value="Ebonyi">Ebonyi</option>
+                            <option value="Edo">Edo</option>
+                            <option value="Ekiti">Ekiti</option>
+                            <option value="Enugu">Enugu</option>
+                            <option value="Gombe">Gombe</option>
+                            <option value="Imo">Imo</option>
+                            <option value="Jigawa">Jigawa</option>
+                            <option value="Kaduna">Kaduna</option>
+                            <option value="Kano">Kano</option>
+                            <option value="Katsina">Katsina</option>
+                            <option value="Kebbi">Kebbi</option>
+                            <option value="Kogi">Kogi</option>
+                            <option value="Kwara">Kwara</option>
+                            <option value="Lagos">Lagos</option>
+                            <option value="Nasarawa">Nasarawa</option>
+                            <option value="Niger">Niger</option>
+                            <option value="Ogun">Ogun</option>
+                            <option value="Ondo">Ondo</option>
+                            <option value="Osun">Osun</option>
+                            <option value="Oyo">Oyo</option>
+                            <option value="Plateau">Plateau</option>
+                            <option value="Rivers">Rivers</option>
+                            <option value="Sokoto">Sokoto</option>
+                            <option value="Taraba">Taraba</option>
+                            <option value="Yobe">Yobe</option>
+                            <option value="Zamfara">Zamfara</option>
+                            <option value="FCT">FCT</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-gray-700 mb-2">Payment Method *</label>
+                        <select id="payment-method" class="w-full p-3 border rounded" required>
+                            <option value="">Select Payment Method</option>
+                            <option value="cash_on_delivery">Cash on Delivery</option>
+                            <option value="paystack">Paystack - Card/Bank Transfer</option>
+                        </select>
+                    </div>
+                    <div id="payment-msg" class="hidden p-3 rounded mb-4"></div>
+                    <button type="submit" id="place-order-btn"
+                        class="w-full bg-yellow-500 text-white py-3 rounded hover:bg-yellow-600 font-semibold">Place
+                        Order</button>
+                </form>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md h-fit">
+                <h2 class="text-xl font-bold mb-4">Order Summary</h2>
+                <div id="summary-items" class="space-y-3 mb-4 border-b pb-4 max-h-64 overflow-y-auto">Loading cart...
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between"><span>Subtotal:</span><span id="summary-subtotal">NGN 0</span>
+                    </div>
+                    <div class="flex justify-between"><span>Delivery Fee:</span><span
+                            id="delivery-fee">Select State</span></div>
+                    <div class="flex justify-between font-bold text-xl border-t pt-2"><span>Total:</span><span
+                            id="summary-total">NGN 0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script src="js/navbar.js"></script>
+    <script>
+        var DELIVERY_FEE = 0;
+        var SELECTED_STATE = '';
+        var backendCart = { items: [], total: 0 };
+        var subtotal = 0;
+
+        const STATES = ["Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara", "FCT"];
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            var token = localStorage.getItem('token');
+            var user = JSON.parse(localStorage.getItem('user') || 'null');
+            if (!token) { window.location.href = 'login.html'; return; }
+            document.getElementById('fullname').value = user.username || '';
+
+            // fill state dropdown
+            const stateSelect = document.getElementById('delivery-state');
+            if (stateSelect) {
+                STATES.forEach(st => {
+                    const opt = document.createElement('option');
+                    opt.value = st; opt.textContent = st;
+                    stateSelect.appendChild(opt);
+                });
+
+                stateSelect.addEventListener('change', async (e) => {
+                    SELECTED_STATE = e.target.value;
+                    if (!SELECTED_STATE) return;
+                    const res = await fetch(`/api/settings/shipping-fee/${encodeURIComponent(SELECTED_STATE)}`);
+                    const data = await res.json();
+                    DELIVERY_FEE = parseFloat(data.fee) || 0;
+                    document.getElementById('delivery-fee').textContent = 'NGN ' + DELIVERY_FEE;
+                    document.getElementById('summary-total').textContent = 'NGN ' + (subtotal + DELIVERY_FEE).toFixed(2);
+                });
+            }
+
+            await loadBackendCart();
+            document.getElementById('delivery-fee').textContent = 'Select state';
+        });
+
+        async function loadBackendCart() {
+            var token = localStorage.getItem('token');
+            try {
+                var res = await fetch('/api/cart', { headers: { 'Authorization': 'Bearer ' + token } });
+                var data = await res.json();
+                console.log('Checkout cart:', data);
+                var items = data.items || [];
+                var total = data.total || 0;
+                if (!total) {
+                    total = 0;
+                    for (var i = 0; i < items.length; i++) {
+                        var it = items[i];
+                        var pr = (it.product && it.product.price) || it.price || 0;
+                        total += pr * it.quantity;
+                    }
+                }
+                backendCart = { items: items, total: total };
+                subtotal = total;
+                if (items.length === 0) { alert('Cart empty'); window.location.href = 'shop.html'; return; }
+                var summaryDiv = document.getElementById('summary-items');
+                var html = '';
+                for (var j = 0; j < items.length; j++) {
+                    var item = items[j];
+                    var p = item.product || {};
+                    var name = p.name || 'Product';
+                    var price = p.price || item.price || 0;
+                    var qty = item.quantity || 1;
+                    var lineTotal = (price * qty).toFixed(2);
+                    html += '<div class="flex justify-between text-sm"><span>' + name + ' x ' + qty + '</span><span>NGN ' + lineTotal + '</span></div>';
+                }
+                summaryDiv.innerHTML = html;
+                document.getElementById('summary-subtotal').textContent = 'NGN ' + subtotal.toFixed(2);
+                document.getElementById('summary-total').textContent = 'NGN ' + (subtotal + DELIVERY_FEE).toFixed(2);
+            } catch (e) {
+                console.error('Checkout error:', e);
+                document.getElementById('summary-items').innerHTML = '<p class="text-red-500">Failed to load cart: ' + e.message + '</p>';
+            }
+        }
+
+        document.getElementById('checkout-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            var btn = document.getElementById('place-order-btn');
+            var paymentMethod = document.getElementById('payment-method').value;
+            if (!paymentMethod) { alert('Select payment method'); return; }
+
+            var fullname = document.getElementById('fullname').value.trim();
+            var phone = document.getElementById('phone').value.trim();
+            var address = document.getElementById('address').value.trim();
+            if (!fullname || !phone || !address) { alert('Fill all fields'); return; }
+
+            btn.disabled = true; btn.textContent = 'Processing...';
+            var total = subtotal + DELIVERY_FEE;
+
+            if (paymentMethod === 'cash_on_delivery') {
+                // Cash - no Paystack, go straight to create order
+                await createOrder(fullname, phone, address, total, 'cash_on_delivery');
+            } else if (paymentMethod === 'paystack') {
+                // Paystack - open popup, then verify, then create order
+                payWithPaystack(fullname, phone, address, total);
+            }
+        });
+
+        const PAYSTACK_PUBLIC_KEY = 'pk_test_xxxxxxxx';
+
+
+        async function payWithPaystack(fullname, phone, address, total) {
+            var token = localStorage.getItem('token');
+            var btn = document.getElementById('place-order-btn');
+
+            try {
+                // Call your backend to initialize Paystack
+                var res = await fetch('/api/orders/paystack/initialize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        items: backendCart.items.map(it => ({
+                            product_id: (it.product && it.product.id) || it.product_id,
+                            quantity: it.quantity
+                        })),
+                        customer_name: fullname,
+                        customer_phone: phone,
+                        customer_address: address,
+                        delivery_state: SELECTED_STATE,
+                        delivery_fee: DELIVERY_FEE,
+                        total: total,
+                        metadata: {
+                            customer_name: fullname,
+                            customer_phone: phone,
+                            customer_address: address,
+                            delivery_state: SELECTED_STATE,
+                            delivery_fee: DELIVERY_FEE
+                        }
+                    }),
+                });
+
+                var text = await res.text(); // get as text first
+                console.log('RAW RESPONSE:', text);
+                var data = JSON.parse(text); // now parse
+                if (!res.ok) {
+                    alert(data.msg || 'Paystack init failed');
+                    btn.disabled = false;
+                    btn.textContent = 'Place Order';
+                    return;
+                }
+
+                // Redirect to Paystack - Paystack will redirect back to verify.html?reference=xxx
+                window.location.href = data.authorization_url;
+
+            } catch (e) {
+                alert('Error: ' + e.message);
+                btn.disabled = false;
+                btn.textContent = 'Place Order';
+            }
+        }
+        async function createOrder(fullname, phone, address, total, paymentMethod, paystackRef) {
+            var token = localStorage.getItem('token');
+            try {
+                var itemsToSend = [];
+                for (var k = 0; k < backendCart.items.length; k++) {
+                    var itm = backendCart.items[k];
+                    var prd = itm.product || {};
+                    itemsToSend.push({ product_id: prd.id || itm.product_id, quantity: itm.quantity, price: prd.price || itm.price });
+                }
+                var res = await fetch('/api/orders/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({
+                        items: itemsToSend,
+                        customer_name: fullname, customer_phone: phone, customer_address: address,
+                        total: total, payment_method: paymentMethod, paystack_ref: paystackRef || null,
+                        delivery_state: SELECTED_STATE,
+                        delivery_fee: DELIVERY_FEE
+                    })
+                });
+                var data = await res.json();
+                if (res.ok) {
+                    // Clear cart after order success
+                    try {
+                        await fetch('/api/cart/clear', {
+                            method: 'DELETE',
+                            headers: { 'Authorization': 'Bearer ' + token }
+                        });
+                        console.log('Cart cleared');
+                    } catch (e) {
+                        console.log('Clear cart error:', e);
+                    }
+
+                    // Also clear localStorage if you use it
+                    localStorage.removeItem('cart');
+
+                    alert('Order placed successfully!');
+                    window.location.href = 'orders.html';
+                } else {
+                    alert(data.msg || 'Failed');
+                    document.getElementById('place-order-btn').disabled = false;
+                    document.getElementById('place-order-btn').textContent = 'Place Order';
+                }
+            } catch (err) {
+                alert('Server error');
+                document.getElementById('place-order-btn').disabled = false;
+                document.getElementById('place-order-btn').textContent = 'Place Order';
+            }
+        }
+
+        document.getElementById('hamburger-btn').onclick = () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+            document.getElementById('mobile-menu').classList.toggle('flex-col');
+        }
+        document.getElementById('nav-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') { const q = e.target.value.trim(); window.location.href = q ? 'shop.html?search=' + encodeURIComponent(q) : 'shop.html'; }
+        });
+    </script>
+</body>
+
+</html>

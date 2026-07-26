@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product - ShopByGold</title>
+    <link href="output.css" rel="stylesheet">
+    <link href="mobile.css" rel="stylesheet">
+
+    <!-- favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon.svg">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-md p-4 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto flex justify-between items-center gap-2">
+            <!-- Logo smaller on mobile -->
+            <a href="shop.html" class="text-2xl font-bold text-yellow-600 flex-shrink-0" id="nav-logo">ShopByGold</a>
+
+            <!-- Search - shows on all screens, small on mobile -->
+            <div class="flex-1 max-w-xs md:max-w-md mx-2">
+                <input id="nav-search-input" type="text" placeholder="Search..."
+                    class="w-full border rounded-full px-3 py-3 text-sm bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+            </div>
+
+            <!-- Desktop Links -->
+            <div id="desktop-links" class="flex gap-6 items-center">
+                <a href="shop.html" class="text-yellow-600 font-semibold">Shop</a>
+                <a id="ordersLink" href="orders.html" class="hidden text-gray-700 hover:text-yellow-600">My Orders</a>
+                <a id="adminLink" href="admin.html" class="hidden text-blue-600 hover:underline">Admin</a>
+                <a id="loginLink" href="login.html" class="text-gray-700 hover:text-yellow-600">Login</a>
+                <a id="registerLink" href="register.html"
+                    class="hidden text-gray-700 hover:text-yellow-600">Register</a>
+                <span id="username" class="hidden text-gray-700"></span>
+                <button id="logoutBtn" onclick="logout()" class="hidden text-red-500 hover:underline">Logout</button>
+                <a href="cart.html" class="relative">🛒<span id="cart-count"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span></a>
+            </div>
+
+            <!-- Hamburger - mobile only -->
+            <button id="hamburger-btn"
+                class="hidden text-2xl bg-gray-100 rounded-full w-9 h-9 flex items-center justify-center">☰</button>
+        </div>
+
+        <!-- MOBILE MENU - links downward -->
+        <div id="mobile-menu" class="hidden bg-white border-t shadow-lg absolute left-0 top-full w-full p-4 z-50">
+            <a href="shop.html" class="py-3 border-b">Shop</a>
+            <a id="m-ordersLink" href="orders.html" class="hidden py-3 border-b">My Orders</a>
+            <a id="m-adminLink" href="admin.html" class="hidden py-3 border-b text-blue-600">Admin</a>
+            <a href="cart.html" class="py-3 border-b">Cart</a>
+            <a id="m-loginLink" href="login.html" class="py-3 border-b">Login</a>
+            <a id="m-registerLink" href="register.html" class="hidden py-3 border-b">Register</a>
+            <span id="m-username" class="hidden py-3 border-b font-semibold"></span>
+            <button id="m-logoutBtn" onclick="logout()" class="hidden py-3 text-left text-red-500">Logout</button>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto mt-8 px-4 pb-10">
+        <div id="loading" class="text-center py-20 text-gray-500">Loading product...</div>
+
+        <div id="product-detail" class="hidden grid md:grid-cols-2 gap-8 bg-white p-8 rounded-lg shadow-md">
+            <div>
+                <img id="product-image" src="" alt="" class="w-full rounded-lg">
+            </div>
+            <div>
+                <h1 id="product-name" class="text-3xl font-bold mb-4"></h1>
+                <div class="flex items-center gap-4 mb-4">
+                    <span id="product-price" class="text-3xl font-bold text-yellow-600"></span>
+                    <span id="product-stock" class="text-sm"></span>
+                </div>
+                <p id="product-desc" class="text-gray-600 mb-6"></p>
+
+                <div class="flex gap-4 mb-6">
+                    <input type="number" id="qty" value="1" min="1" class="w-20 p-2 border rounded">
+                    <button onclick="addProductToCart()" id="add-btn" class="flex-1 bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 font-semibold">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="border-t pt-6">
+                    <h3 class="font-bold text-xl mb-4">Reviews</h3>
+                    <div id="reviews-list" class="space-y-4 mb-6"></div>
+
+                    <div id="review-form" class="hidden border-t pt-4">
+                        <h4 class="font-semibold mb-3">Write a Review</h4>
+                        <select id="rating" class="w-full p-2 border rounded mb-3">
+                            <option value="5">5 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="2">2 Stars</option>
+                            <option value="1">1 Star</option>
+                        </select>
+                        <textarea id="review-comment" placeholder="Your review..." class="w-full p-2 border rounded mb-3" rows="3"></textarea>
+                        <button onclick="submitReview()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Submit Review</button>
+                    </div>
+                    <p id="login-to-review" class="text-gray-500 text-sm">Please login to write a review</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHARED NAV + CART -->
+    <script src="js/navbar.js"></script>
+
+    <script>
+        let currentProduct = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const token = localStorage.getItem('token');
+            if (token) {
+                document.getElementById('review-form').classList.remove('hidden');
+                document.getElementById('login-to-review').classList.add('hidden');
+            }
+            loadProduct();
+        });
+
+        async function loadProduct() {
+            if (!productId) {
+                document.getElementById('loading').textContent = 'Product ID missing';
+                return;
+            }
+            try {
+                const res = await fetch('/api/products/' + productId);
+                if (!res.ok) throw new Error('Product not found');
+                currentProduct = await res.json();
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('product-detail').classList.remove('hidden');
+
+                document.getElementById('product-image').src = currentProduct.image_url || 'https://via.placeholder.com/500';
+                document.getElementById('product-name').textContent = currentProduct.name;
+                document.getElementById('product-price').textContent = 'NGN ' + currentProduct.price;
+                document.getElementById('product-stock').textContent = currentProduct.stock > 0 ? currentProduct.stock + ' in stock' : 'Out of stock';
+                document.getElementById('product-desc').textContent = currentProduct.description || 'No description';
+
+                if (currentProduct.stock === 0) {
+                    document.getElementById('add-btn').disabled = true;
+                    document.getElementById('add-btn').textContent = 'Out of Stock';
+                    document.getElementById('add-btn').classList.add('bg-gray-400', 'cursor-not-allowed');
+                }
+                loadReviews();
+            } catch (err) {
+                document.getElementById('loading').textContent = 'Failed to load product';
+            }
+        }
+
+        async function addProductToCart() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login first');
+                window.location.href = 'login.html';
+                return;
+            }
+            const qty = parseInt(document.getElementById('qty').value) || 1;
+            if (qty > currentProduct.stock) {
+                alert('Only ' + currentProduct.stock + ' available');
+                return;
+            }
+            const res = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ product_id: currentProduct.id, quantity: qty })
+            });
+            if (res.ok) {
+                updateCartCount();
+                if (confirm('Added to cart! View cart now?')) {
+                    window.location.href = 'cart.html';
+                }
+            } else {
+                const data = await res.json();
+                alert(data.msg || 'Failed');
+            }
+        }
+
+        async function loadReviews() {
+            try {
+                const res = await fetch('/api/reviews/' + productId);
+                const reviews = await res.json();
+                const reviewsDiv = document.getElementById('reviews-list');
+                if (reviews.length === 0) {
+                    reviewsDiv.innerHTML = '<p class="text-gray-500">No reviews yet</p>';
+                    return;
+                }
+                reviewsDiv.innerHTML = reviews.map(function(r){
+                    return '<div class="border-b pb-3">' +
+                        '<div class="flex justify-between mb-1">' +
+                            '<span class="font-semibold">' + r.username + '</span>' +
+                            '<span class="text-yellow-500">' + '⭐'.repeat(r.rating) + '</span>' +
+                        '</div>' +
+                        '<p class="text-gray-600 text-sm">' + r.comment + '</p>' +
+                        '<p class="text-xs text-gray-400 mt-1">' + new Date(r.created_at).toLocaleDateString() + '</p>' +
+                    '</div>';
+                }).join('');
+            } catch (err) {}
+        }
+
+        async function submitReview() {
+            const token = localStorage.getItem('token');
+            if (!token) { alert('Please login first'); return; }
+            const rating = document.getElementById('rating').value;
+            const comment = document.getElementById('review-comment').value;
+            if (!comment.trim()) { alert('Please write a comment'); return; }
+            try {
+                const res = await fetch('/api/reviews/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ product_id: productId, rating: parseInt(rating), comment: comment })
+                });
+                if (res.ok) {
+                    document.getElementById('review-comment').value = '';
+                    loadReviews();
+                    alert('Review submitted!');
+                } else {
+                    const data = await res.json();
+                    alert(data.msg || 'Failed');
+                }
+            } catch (err) { alert('Server error'); }
+        }
+
+        document.getElementById('hamburger-btn').onclick = () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+            document.getElementById('mobile-menu').classList.toggle('flex-col');
+        }
+        document.getElementById('nav-search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') { const q = e.target.value.trim(); window.location.href = q ? 'shop.html?search=' + encodeURIComponent(q) : 'shop.html'; }
+        });
+    </script>
+</body>
+</html>
