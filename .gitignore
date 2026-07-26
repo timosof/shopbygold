@@ -22,3 +22,5 @@ Thumbs.db
 # Frontend
 node_modules/backend/venv/ 
 backend/instance/ 
+backend/uploads/ 
+backend/static/ 
