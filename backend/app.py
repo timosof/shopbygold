@@ -159,48 +159,52 @@ def handle_ai_chat():
 
     cart_text = ", ".join([f"{c['name']} x{c.get('quantity',1)}" for c in real_cart]) if real_cart else "empty"
 
-    # Try Groq first (FREE), then OpenAI if you have credit
+    # === GROQ - FIXED MODEL ===
     try:
         from groq import Groq
-        api_key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise Exception("GROQ_API_KEY not set on Render")
+
         client = Groq(api_key=api_key)
 
         sample_products = Product.query.limit(5).all()
-        products_text = ", ".join([f"{p.name} (₦{p.price})" for p in sample_products])
+        products_text = ", ".join([f"{p.name} (₦{p.price})" for p in sample_products]) if sample_products else "many gold jewelry"
 
         prompt = f"""You are ShopByGold AI assistant for Nigeria.
         Products: {products_text}
         Customer cart: {cart_text}
-        Customer: {user_msg}
-        Be friendly, short (2-3 sentences), mention Paystack and Pay on Delivery if they ask about payment.
-        If cart has items, mention them."""
+        Customer says: {user_msg}
+        Be friendly, short (2-3 sentences). Help with products, Paystack, Pay on Delivery, delivery.
+        If cart has items, mention them naturally."""
 
         completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.3-70b-versatile", # FIXED - old model retired
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=150
+            max_tokens=200
         )
         reply = completion.choices[0].message.content
         print(f"Groq AI replied: {reply}")
+        return jsonify({"reply": reply, "cart_count": len(real_cart)})
 
     except Exception as e:
-        print(f"AI error (using fallback): {e}")
+        print(f"AI Groq error: {e}") # This will show in Render logs
+        # Smart fallback
         msg_lower = user_msg.lower()
         if 'paystack' in msg_lower:
-            reply = "Yes, we accept Paystack - Card, Transfer, USSD. Secure and fast!"
+            reply = "Yes, we accept Paystack - Card, Transfer, USSD. Secure and fast! 💳"
         elif 'delivery' in msg_lower or 'pod' in msg_lower:
-            reply = "Yes! Pay on Delivery available nationwide. Pay when it arrives."
+            reply = "Yes! Pay on Delivery available nationwide. Pay when it arrives 🚚"
         elif real_cart:
             items = ", ".join([c['name'] for c in real_cart][:2])
             reply = f"You have {items} in your cart. Want to checkout? We have Paystack and Pay on Delivery."
         else:
-            # Try to search product by keyword
-            keyword = user_msg.split()[-1] if len(user_msg.split())>0 else ""
+            keyword = user_msg.split()[-1] if user_msg.split() else ""
             found = Product.query.filter(Product.name.ilike(f"%{keyword}%")).first() if keyword else None
             if found:
                 reply = f"Yes! We have {found.name} for ₦{found.price}. In stock: {found.stock}. Want to add to cart?"
             else:
-                reply = "Hello! I can help with your cart, Paystack, Pay on Delivery, or find products for you."
+                reply = "Hello! I can help with your cart, Paystack, Pay on Delivery, or find products for you. What do you need?"
 
     return jsonify({"reply": reply, "cart_count": len(real_cart)})
 
