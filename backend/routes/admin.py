@@ -91,3 +91,40 @@ def delete_user(user_id):
         db.session.rollback()
         print(f"DELETE USER ERROR: {e}")
         return jsonify({"msg": f"Failed to delete: {str(e)}"}), 500
+    
+from models import Cart, CartItem, User
+from datetime import datetime
+
+@admin_bp.route('/api/admin/abandoned-carts', methods=['GET'])
+@admin_bp.route('/abandoned-carts', methods=['GET'])
+@jwt_required()
+def get_abandoned_carts():
+    try:
+        from models import Cart, CartItem, User
+        result = []
+        carts = Cart.query.all()
+        for cart in carts:
+            items = CartItem.query.filter_by(cart_id=cart.id).all()
+            if not items:
+                continue
+            cart_user = User.query.get(cart.user_id)
+            email = cart_user.email if cart_user else f"User {cart.user_id}"
+            phone = getattr(cart_user, 'phone', '') if cart_user else ''
+            item_list = []
+            total = 0
+            for it in items:
+                if it.product:
+                    item_list.append(f"{it.product.name} x{it.quantity}")
+                    total += float(it.product.price) * it.quantity
+            
+            result.append({
+                "email": email,
+                "phone": phone,
+                "items": item_list,
+                "total": total,
+                "abandoned_for": "In cart"
+            })
+        return jsonify(result)
+    except Exception as e:
+        print(f"ABANDONED CART ERROR: {e}")
+        return jsonify({"msg": str(e)}), 500

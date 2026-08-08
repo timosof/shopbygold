@@ -120,3 +120,41 @@
     font-size: 20px!important;
   }
 }
+
+/* --- ABANDONED CARTS FIX --- */
+#abandoned-tab {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+#abandoned-tab table {
+  min-width: 600px !important;
+}
+
+@media (max-width: 768px){
+  #abandoned-tab .flex { flex-direction: column !important; }
+  #abandoned-tab table thead { display: none !important; }
+  #abandoned-tab table,
+  #abandoned-tab tbody,
+  #abandoned-tab tr,
+  #abandoned-tab td { display: block !important; width: 100% !important; }
+  #abandoned-tab tr {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  #abandoned-tab td {
+    border: none !important;
+    padding: 6px !important;
+    text-align: left !important;
+  }
+  #abandoned-tab td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 2px;
+  }
+}

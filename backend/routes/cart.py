@@ -64,6 +64,7 @@ def add_to_cart():
     return jsonify({"msg": "Added to cart", "cart": cart.to_dict()}), 200
 
 
+
 @cart_bp.route("/api/cart/update", methods=["PUT"])
 @jwt_required()
 def update_cart_item():

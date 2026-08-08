@@ -20,9 +20,25 @@ function checkAuth() {
     const mOrders = document.getElementById('m-ordersLink');
 
     if (token && user) {
-        // LOGGED IN
-        if (usernameEl) { usernameEl.textContent = 'Hi, ' + user.username; usernameEl.classList.remove('hidden'); }
-        if (mUsername) { mUsername.textContent = 'Hi, ' + user.username; mUsername.classList.remove('hidden'); }
+        const avatarUrl = user.avatar;
+
+        if (usernameEl) {
+            if (avatarUrl) {
+                usernameEl.innerHTML = `<a href="profile.html"><img src="${avatarUrl}" style="width:32px;height:32px;min-width:32px;min-height:32px" class="rounded-full object-cover border-2 border-yellow-500"></a>`;
+            } else {
+                usernameEl.innerHTML = `<a href="profile.html" class="font-semibold">Hi, ${user.username}</a>`;
+            }
+            usernameEl.classList.remove('hidden');
+        }
+        if (mUsername) {
+            if (avatarUrl) {
+                mUsername.innerHTML = `<a href="profile.html" class="flex items-center gap-2"><img src="${avatarUrl}" style="width:32px;height:32px;min-width:32px;min-height:32px" class="rounded-full object-cover border-2 border-yellow-500"><span>${user.username}</span></a>`;
+            } else {
+                mUsername.innerHTML = `<a href="profile.html">Hi, ${user.username}</a>`;
+            }
+            mUsername.classList.remove('hidden');
+        }
+
         if (logoutBtn) logoutBtn.classList.remove('hidden');
         if (mLogout) mLogout.classList.remove('hidden');
         if (ordersLink) ordersLink.classList.remove('hidden');
@@ -31,6 +47,7 @@ function checkAuth() {
         if (registerLink) registerLink.classList.add('hidden');
         if (mLogin) mLogin.classList.add('hidden');
         if (mRegister) mRegister.classList.add('hidden');
+
         if (user.role === 'admin' || user.is_admin === true) {
             if (adminLink) adminLink.classList.remove('hidden');
             if (mAdmin) mAdmin.classList.remove('hidden');
@@ -38,8 +55,19 @@ function checkAuth() {
             if (adminLink) adminLink.classList.add('hidden');
             if (mAdmin) mAdmin.classList.add('hidden');
         }
+
+        // FETCH FRESH AVATAR FROM API - THIS IS THE PART YOU ASKED ABOUT
+        fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+            .then(r => r.json())
+            .then(u => {
+                if (u.avatar) {
+                    localStorage.setItem('user', JSON.stringify(u));
+                    if (usernameEl) usernameEl.innerHTML = `<a href="profile.html"><img src="${u.avatar}" style="width:32px;height:32px;min-width:32px;min-height:32px" class="rounded-full object-cover border-2 border-yellow-500"></a>`;
+                    if (mUsername) mUsername.innerHTML = `<a href="profile.html" class="flex items-center gap-2"><img src="${u.avatar}" style="width:32px;height:32px;min-width:32px;min-height:32px" class="rounded-full object-cover border-2 border-yellow-500"><span>${u.username}</span></a>`;
+                }
+            }).catch(() => {});
+
     } else {
-        // LOGGED OUT
         if (usernameEl) usernameEl.classList.add('hidden');
         if (mUsername) mUsername.classList.add('hidden');
         if (logoutBtn) logoutBtn.classList.add('hidden');
@@ -72,16 +100,16 @@ async function updateCartCount() {
         if (!res.ok) { el.textContent = '0'; return; }
         const data = await res.json();
         const items = data.items || data.cart?.items || [];
-        el.textContent = items.reduce((s,i)=>s+(i.quantity||0),0);
+        el.textContent = items.reduce((s, i) => s + (i.quantity || 0), 0);
     } catch { el.textContent = '0'; }
 }
 
 async function addToCart(productId) {
     const token = localStorage.getItem('token');
-    if (!token) { alert('Please login first'); location.href='login.html'; return; }
+    if (!token) { alert('Please login first'); location.href = 'login.html'; return; }
     const res = await fetch(API_BASE + '/cart/add', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+token },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ product_id: productId, quantity: 1 })
     });
     if (res.ok) { updateCartCount(); alert('Added to cart'); }
@@ -95,8 +123,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (searchInput) {
         const params = new URLSearchParams(location.search);
         if (params.get('search')) searchInput.value = params.get('search');
-        searchInput.addEventListener('keypress', (e)=>{
-            if(e.key==='Enter'){ const q=e.target.value.trim(); location.href = q ? 'shop.html?search='+encodeURIComponent(q) : 'shop.html'; }
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') { const q = e.target.value.trim(); location.href = q ? 'shop.html?search=' + encodeURIComponent(q) : 'shop.html'; }
         });
     }
 });
+

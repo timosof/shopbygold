@@ -1,8 +1,9 @@
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -121,7 +122,137 @@ def api_health():
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
+# ===== STEP 3: AI CHAT THAT KNOWS YOUR REAL CART =====
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+from models import Cart, CartItem, Product
 
+ai_abandoned_carts = {} # for guests only
+
+@app.route('/api/ai-chat', methods=['POST'])
+def handle_ai_chat():
+    data = request.get_json()
+    user_msg = data.get('message', '')
+    frontend_cart = data.get('cart', [])
+
+    real_cart = []
+    try:
+        verify_jwt_in_request(optional=True)
+        user_id_raw = get_jwt_identity()
+        if user_id_raw:
+            user_id = int(user_id_raw)
+            cart = Cart.query.filter_by(user_id=user_id).first()
+            if cart:
+                items = CartItem.query.filter_by(cart_id=cart.id).all()
+                for it in items:
+                    if it.product:
+                        real_cart.append({"name": it.product.name, "price": float(it.product.price), "quantity": it.quantity})
+    except:
+        pass
+
+    if not real_cart:
+        real_cart = frontend_cart
+
+    cart_text = ", ".join([f"{c['name']} x{c.get('quantity',1)}" for c in real_cart]) if real_cart else "empty"
+
+    # Try Groq first (FREE), then OpenAI if you have credit
+    try:
+        from groq import Groq
+        api_key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY")
+        client = Groq(api_key=api_key)
+
+        sample_products = Product.query.limit(5).all()
+        products_text = ", ".join([f"{p.name} (₦{p.price})" for p in sample_products])
+
+        prompt = f"""You are ShopByGold AI assistant for Nigeria.
+        Products: {products_text}
+        Customer cart: {cart_text}
+        Customer: {user_msg}
+        Be friendly, short (2-3 sentences), mention Paystack and Pay on Delivery if they ask about payment.
+        If cart has items, mention them."""
+
+        completion = client.chat.completions.create(
+            model="llama-3.1-8b-instant", # FREE fast model
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=150
+        )
+        reply = completion.choices[0].message.content
+        print(f"Groq AI replied: {reply}")
+
+    except Exception as e:
+        print(f"AI error (using fallback): {e}")
+        msg_lower = user_msg.lower()
+        if 'paystack' in msg_lower:
+            reply = "Yes, we accept Paystack - Card, Transfer, USSD. Secure and fast!"
+        elif 'delivery' in msg_lower or 'pod' in msg_lower:
+            reply = "Yes! Pay on Delivery available nationwide. Pay when it arrives."
+        elif real_cart:
+            items = ", ".join([c['name'] for c in real_cart][:2])
+            reply = f"You have {items} in your cart. Want to checkout? We have Paystack and Pay on Delivery."
+        else:
+            # Try to search product by keyword
+            keyword = user_msg.split()[-1] if len(user_msg.split())>0 else ""
+            found = Product.query.filter(Product.name.ilike(f"%{keyword}%")).first() if keyword else None
+            if found:
+                reply = f"Yes! We have {found.name} for ₦{found.price}. In stock: {found.stock}. Want to add to cart?"
+            else:
+                reply = "Hello! I can help with your cart, Paystack, Pay on Delivery, or find products for you."
+
+    return jsonify({"reply": reply, "cart_count": len(real_cart)})
+
+@app.route('/api/ai-cart/save', methods=['POST'])
+def save_ai_cart():
+    # For guests, save by IP. For logged in users, we don't need this - we read directly from DB
+    data = request.get_json()
+    cart = data.get('cart', [])
+    user_id = request.remote_addr
+    if user_id not in ai_abandoned_carts or len(ai_abandoned_carts[user_id].get("cart", []))!= len(cart):
+        ai_abandoned_carts[user_id] = {"cart": cart, "time": datetime.now(), "reminded": False}
+    return jsonify({"status": "saved"})
+
+@app.route('/api/ai-cart/check', methods=['POST'])
+def check_ai_cart():
+    try:
+        verify_jwt_in_request(optional=True)
+        user_id_raw = get_jwt_identity()
+        if user_id_raw:
+            user_id = int(user_id_raw)
+            cart = Cart.query.filter_by(user_id=user_id).first()
+            if cart:
+                items = CartItem.query.filter_by(cart_id=cart.id).all()
+                if items:
+                    key = f"user_{user_id}"
+                    now = datetime.now()
+
+                    # If never seen this cart, start timer
+                    if key not in ai_abandoned_carts:
+                        ai_abandoned_carts[key] = {"time": now}
+                        print(f"Timer started for user {user_id}")
+                        return jsonify({"abandoned": False})
+
+                    # Check how long
+                    time_diff = (now - ai_abandoned_carts[key]["time"]).total_seconds()
+                    print(f"User {user_id}: {int(time_diff)}s since last reminder")
+
+                    # REMIND EVERY 15 SECONDS FOR TESTING
+                    if time_diff > 200:
+                        ai_abandoned_carts[key]["time"] = now # reset timer for next 15 sec
+                        names = ", ".join([it.product.name for it in items[:2] if it.product])
+                        print(f"REMINDING user {user_id} about {names}")
+                        return jsonify({
+                            "abandoned": True,
+                            "message": f"Hi, you still have {names} in your cart 🛒. Pay with Paystack or Pay on Delivery?"
+                        })
+                    return jsonify({"abandoned": False})
+                else:
+                    # Cart empty, delete timer
+                    key = f"user_{user_id}"
+                    if key in ai_abandoned_carts:
+                        del ai_abandoned_carts[key]
+    except Exception as e:
+        print(f"CHECK ERROR: {e}")
+
+    return jsonify({"abandoned": False})
+# ===== END STEP 3 =====
 
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
@@ -145,6 +276,10 @@ with app.app_context():
         print(f"MAIL PASS SET: {bool(app.config.get('MAIL_PASSWORD'))}")
     except Exception as e:
         print(f"DB init error: {e}")
+
+
+
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

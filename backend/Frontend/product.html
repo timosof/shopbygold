@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +8,38 @@
     <link href="output.css" rel="stylesheet">
     <link href="mobile.css" rel="stylesheet">
 
+    <style>
+        .more-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            /* 2 per row on mobile - small screen okay */
+            gap: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .more-grid {
+                grid-template-columns: repeat(4, 1fr);
+                /* 4 per row on desktop */
+            }
+        }
+
+        .more-grid a img {
+            height: 140px;
+        }
+
+        @media (min-width: 1024px) {
+            .more-grid a img {
+                height: 160px;
+                /* smaller height so desktop cards not too big */
+            }
+        }
+    </style>
+
     <!-- favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/png" href="/favicon.svg">
 </head>
+
 <body class="bg-gray-50">
     <nav class="bg-white shadow-md p-4 sticky top-0 z-10">
         <div class="max-w-6xl mx-auto flex justify-between items-center gap-2">
@@ -72,7 +101,8 @@
 
                 <div class="flex gap-4 mb-6">
                     <input type="number" id="qty" value="1" min="1" class="w-20 p-2 border rounded">
-                    <button onclick="addProductToCart()" id="add-btn" class="flex-1 bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 font-semibold">
+                    <button onclick="addProductToCart()" id="add-btn"
+                        class="flex-1 bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 font-semibold">
                         Add to Cart
                     </button>
                 </div>
@@ -90,17 +120,86 @@
                             <option value="2">2 Stars</option>
                             <option value="1">1 Star</option>
                         </select>
-                        <textarea id="review-comment" placeholder="Your review..." class="w-full p-2 border rounded mb-3" rows="3"></textarea>
-                        <button onclick="submitReview()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Submit Review</button>
+                        <textarea id="review-comment" placeholder="Your review..."
+                            class="w-full p-2 border rounded mb-3" rows="3"></textarea>
+                        <button onclick="submitReview()"
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Submit Review</button>
                     </div>
                     <p id="login-to-review" class="text-gray-500 text-sm">Please login to write a review</p>
                 </div>
             </div>
         </div>
+        <!-- More from this category -->
+        <div id="more-section" class="bg-white mt-6 p-4 rounded-xl shadow">
+            <h3 class="font-bold text- mb-4">More from this category - <span id="cat-name"
+                    class="text-yellow-600"></span>
+            </h3>
+            <div id="more-category" class="more-grid">
+                <p class="text-sm text-gray-400">Loading...</p>
+            </div>
+        </div>
     </div>
+
+
 
     <!-- SHARED NAV + CART -->
     <script src="js/navbar.js"></script>
+
+    <script>
+        // --- MORE FROM THIS CATEGORY (5 products) ---
+        async function loadMoreFromCategory(current) {
+            console.log("Current product:", current); // open F12 to see this
+
+            const catEl = document.getElementById('cat-name');
+            const gridEl = document.getElementById('more-category');
+
+            // category can be called different names in your DB
+            const currentCategory = current.category || current.category_name || current.cat || 'General';
+            if (catEl) catEl.textContent = currentCategory;
+
+            try {
+                const res = await fetch('/api/products');
+                const data = await res.json();
+
+                // handle both formats: [] or {products: []}
+                const all = Array.isArray(data) ? data : (data.products || data.data || []);
+
+                console.log("All products:", all.length);
+
+                let sameCat = all.filter(p => {
+                    const pCat = p.category || p.category_name || p.cat;
+                    return pCat === currentCategory && p.id != current.id;
+                }).slice(0, 4);
+
+                // If less than 4 in same category, fill with random
+                if (sameCat.length < 4) {
+                    const others = all.filter(p => p.id != current.id && !sameCat.find(s => s.id == p.id)).slice(0, 4 - sameCat.length);
+                    sameCat = [...sameCat, ...others];
+                }
+
+                if (sameCat.length === 0) {
+                    gridEl.innerHTML = '<p class="text-sm text-gray-400 col-span-5">No more products found</p>';
+                    return;
+                }
+
+                gridEl.innerHTML = sameCat.map(p => `
+      <a href="product.html?id=${p.id}" class="bg-white border rounded-lg overflow-hidden hover:shadow-md transition">
+        <img src="${p.image || p.image_url || p.imageUrl || 'https://via.placeholder.com/200'}" class="w-full h-32 object-cover">
+        <div class="p-2">
+          <p class="text-xs truncate">${p.name}</p>
+          <p class="font-bold text-sm mt-1">₦${Number(p.price).toLocaleString()}</p>
+        </div>
+      </a>
+    `).join('');
+
+            } catch (e) {
+                console.error("Failed to load more category:", e);
+                gridEl.innerHTML = '<p class="text-sm text-red-400">Failed to load products</p>';
+            }
+        }
+    </script>
+
+
 
     <script>
         let currentProduct = null;
@@ -141,6 +240,7 @@
                     document.getElementById('add-btn').classList.add('bg-gray-400', 'cursor-not-allowed');
                 }
                 loadReviews();
+                loadMoreFromCategory(currentProduct);
             } catch (err) {
                 document.getElementById('loading').textContent = 'Failed to load product';
             }
@@ -183,17 +283,17 @@
                     reviewsDiv.innerHTML = '<p class="text-gray-500">No reviews yet</p>';
                     return;
                 }
-                reviewsDiv.innerHTML = reviews.map(function(r){
+                reviewsDiv.innerHTML = reviews.map(function (r) {
                     return '<div class="border-b pb-3">' +
                         '<div class="flex justify-between mb-1">' +
-                            '<span class="font-semibold">' + r.username + '</span>' +
-                            '<span class="text-yellow-500">' + '⭐'.repeat(r.rating) + '</span>' +
+                        '<span class="font-semibold">' + r.username + '</span>' +
+                        '<span class="text-yellow-500">' + '⭐'.repeat(r.rating) + '</span>' +
                         '</div>' +
                         '<p class="text-gray-600 text-sm">' + r.comment + '</p>' +
                         '<p class="text-xs text-gray-400 mt-1">' + new Date(r.created_at).toLocaleDateString() + '</p>' +
-                    '</div>';
+                        '</div>';
                 }).join('');
-            } catch (err) {}
+            } catch (err) { }
         }
 
         async function submitReview() {
@@ -227,5 +327,8 @@
             if (e.key === 'Enter') { const q = e.target.value.trim(); window.location.href = q ? 'shop.html?search=' + encodeURIComponent(q) : 'shop.html'; }
         });
     </script>
+
+
 </body>
+
 </html>

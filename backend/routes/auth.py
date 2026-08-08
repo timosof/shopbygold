@@ -1,3 +1,5 @@
+import cloudinary.uploader
+from flask import request
 from flask import Blueprint, request, jsonify, current_app
 from flask_mail import Message
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
@@ -166,3 +168,134 @@ def reset_password():
     db.session.commit()
     
     return jsonify({'msg': 'Password reset successful. You can now login.'}), 200
+
+@auth_bp.route('/me', methods=['GET'])
+@jwt_required()
+def get_me():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+    return jsonify({
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "avatar": user.avatar,
+        "role": user.role,
+        "phone": getattr(user, 'phone', ''),
+        "created_at": user.created_at.isoformat() if hasattr(user, 'created_at') and user.created_at else None
+    })
+
+@auth_bp.route('/update-profile', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    data = request.get_json()
+    if 'username' in data and data['username']:
+        user.username = data['username']
+    if 'phone' in data:
+        if not hasattr(user, 'phone'):
+            # add column if not exists
+            pass
+        setattr(user, 'phone', data['phone'])
+    db.session.commit()
+    return jsonify({"msg": "Updated", "username": user.username})
+
+# @auth_bp.route('/change-password', methods=['PUT'])
+# @jwt_required()
+# def change_password():
+#     user_id = get_jwt_identity()
+#     user = User.query.get(user_id)
+#     data = request.get_json()
+#     if not user.check_password(data.get('old_password','')):
+#         return jsonify({"msg": "Old password incorrect"}), 400
+#     user.set_password(data.get('new_password'))
+#     db.session.commit()
+#     return jsonify({"msg": "Password updated"})
+
+# --- CHANGE PASSWORD (for profile page) - does NOT affect reset password ---
+@auth_bp.route('/change-password', methods=['PUT'])
+@jwt_required()
+def change_password_profile():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    data = request.get_json() or {}
+    old_password = data.get('old_password','').strip()
+    new_password = data.get('new_password','').strip()
+
+    if not old_password or not new_password:
+        return jsonify({"msg": "Old and new password required"}), 400
+
+    stored_hash = getattr(user, 'password_hash', None) or getattr(user, 'password', '') or ''
+    
+    if not stored_hash:
+        return jsonify({"msg": "No password set"}), 400
+
+    print(f"DEBUG HASH: {stored_hash[:30]}")  # check terminal
+
+    is_correct = False
+    # If hash starts with $2b$ it's bcrypt
+    if stored_hash.startswith('$2b$') or stored_hash.startswith('$2a$'):
+        try:
+            import bcrypt
+            is_correct = bcrypt.checkpw(old_password.encode('utf-8'), stored_hash.encode('utf-8'))
+        except Exception as e:
+            print("BCRYPT ERROR:", e)
+            is_correct = False
+    else:
+        # werkzeug
+        try:
+            from werkzeug.security import check_password_hash
+            is_correct = check_password_hash(stored_hash, old_password)
+        except Exception as e:
+            print("WERKZEUG ERROR:", e)
+            is_correct = False
+
+    if not is_correct:
+        return jsonify({"msg": "Current password is incorrect"}), 400
+
+    # Save new password using SAME method your register uses
+    try:
+        import bcrypt
+        # Save as bcrypt to match your register method
+        hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        if hasattr(user, 'password_hash'):
+            user.password_hash = hashed
+        else:
+            user.password = hashed
+    except:
+        from werkzeug.security import generate_password_hash
+        user.password_hash = generate_password_hash(new_password)
+
+    db.session.commit()
+    return jsonify({"msg": "Password changed successfully"}), 200
+
+# UPLOAD AVATAR
+@auth_bp.route('/upload-avatar', methods=['POST'])
+@jwt_required()
+def upload_avatar():
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        return {"msg": "User not found"}, 404
+    
+    if 'avatar' not in request.files:
+        return {"msg": "No file"}, 400
+    
+    file = request.files['avatar']
+    try:
+        result = cloudinary.uploader.upload(
+            file,
+            folder="shopbygold_profiles",
+            transformation=[{"width": 300, "height": 300, "crop": "fill", "gravity": "face"}]
+        )
+        user.avatar = result['secure_url']
+        db.session.commit()
+        return {"avatar": user.avatar, "msg": "Uploaded"}, 200
+    except Exception as e:
+        print(f"Cloudinary error: {e}")
+        return {"msg": "Upload failed"}, 500

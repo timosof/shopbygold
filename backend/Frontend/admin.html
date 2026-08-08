@@ -54,6 +54,7 @@
                 <button class="tab-btn text-gray-600 px-4 py-2 rounded" data-tab="users">Users</button>
                 <button class="tab-btn text-gray-600 px-4 py-2 rounded" data-tab="settings">Settings</button>
                 <button class="tab-btn text-gray-600 px-4 py-2 rounded" data-tab="slider">Hero Slider</button>
+                <button class="tab-btn text-gray-600 px-4 py-2 rounded" data-tab="abandoned">Abandoned Carts</button>
             </div>
 
             <!-- Users Tab -->
@@ -239,6 +240,26 @@
                 <h3 class="text-lg font-bold mb-3">Current Sliders</h3>
                 <div id="sliderList" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
             </div>
+            <div id="abandoned-tab" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+                <h2>🛒 Abandoned Carts</h2>
+                <p>Customers who left items in cart - message them to recover sales</p>
+                <table id="abandoned-table" border="1" style="width:100%;border-collapse:collapse;margin-top:15px;">
+                    <thead>
+                        <tr style="background:black;color:white;">
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Abandoned</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="abandoned-body">
+                        <tr>
+                            <td colspan="5">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <script>
                 const NIGERIA_STATES = ["Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara", "FCT"];
@@ -364,6 +385,7 @@
                         if (tab === 'orders') loadOrders();
                         if (tab === 'settings') loadSettings();
                         if (tab === 'users') loadUsers();
+                        if (tab === 'abandoned') loadAbandonedCarts();
                     });
                 });
 
@@ -932,6 +954,18 @@
 
                 // Auto-load when slider tab is clicked
                 document.querySelector('[data-tab="slider"]')?.addEventListener('click', refreshSliders);
+
+                async function loadAbandonedCarts() {
+                    const body = document.getElementById('abandoned-body');
+                    body.innerHTML = '<tr><td colspan="4" class="p-4 text-center">Loading...</td></tr>';
+                    try {
+                        const token = localStorage.getItem('token');
+                        const res = await fetch('/api/admin/abandoned-carts', { headers: { 'Authorization': 'Bearer ' + token } });
+                        const carts = await res.json();
+                        if (carts.length === 0) { body.innerHTML = '<tr><td colspan="4" class="p-4 text-center">No abandoned carts 🎉</td></tr>'; return; }
+                        body.innerHTML = carts.map(c => `<tr class="border-b"><td class="p-3">${c.email}</td><td class="p-3">${c.items.join(', ')}</td><td class="p-3">₦${c.total}</td><td class="p-3"><a href="https://wa.me/?text=Hi, you left ${c.items[0]} in cart" target="_blank"><button class="bg-green-500 text-white px-3 py-1 rounded">WhatsApp</button></a></td></tr>`).join('');
+                    } catch (e) { body.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Error loading</td></tr>'; }
+                }
             </script>
 </body>
 

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - ShopByGold</title>
+  <link href="output.css" rel="stylesheet">
+  <link href="mobile.css" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<script src="/js/navbar.js"></script>
+
+<body class="bg-gray-100">
+  <nav class="bg-white shadow-md p-4 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto flex justify-between items-center gap-2">
+            <!-- Logo smaller on mobile -->
+            <a href="shop.html" class="text-2xl font-bold text-yellow-600 flex-shrink-0" id="nav-logo">ShopByGold</a>
+
+            <!-- Search - shows on all screens, small on mobile -->
+            <div class="flex-1 max-w-xs md:max-w-md mx-2">
+                <input id="nav-search-input" type="text" placeholder="Search..."
+                    class="w-full border rounded-full px-3 py-3 text-sm bg-gray-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+            </div>
+
+            <!-- Desktop Links -->
+            <div id="desktop-links" class="flex gap-6 items-center">
+                <a href="shop.html" class="text-yellow-600 font-semibold">Shop</a>
+                <a id="ordersLink" href="orders.html" class="hidden text-gray-700 hover:text-yellow-600">My Orders</a>
+                <a id="adminLink" href="admin.html" class="hidden text-blue-600 hover:underline">Admin</a>
+                <a id="loginLink" href="login.html" class="text-gray-700 hover:text-yellow-600">Login</a>
+                <a id="registerLink" href="register.html"
+                    class="hidden text-gray-700 hover:text-yellow-600">Register</a>
+                <span id="username" class="hidden text-gray-700"></span>
+                <button id="logoutBtn" onclick="logout()" class="hidden text-red-500 hover:underline">Logout</button>
+                <a href="cart.html" class="relative">🛒<span id="cart-count"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span></a>
+            </div>
+
+            <!-- Hamburger - mobile only -->
+            <button id="hamburger-btn"
+                class="hidden text-2xl bg-gray-100 rounded-full w-9 h-9 flex items-center justify-center">☰</button>
+        </div>
+
+        <!-- MOBILE MENU - links downward -->
+        <div id="mobile-menu" class="hidden bg-white border-t shadow-lg absolute left-0 top-full w-full p-4 z-50">
+            <a href="shop.html" class="py-3 border-b">Shop</a>
+            <a id="m-ordersLink" href="orders.html" class="hidden py-3 border-b">My Orders</a>
+            <a id="m-adminLink" href="admin.html" class="hidden py-3 border-b text-blue-600">Admin</a>
+            <a href="cart.html" class="py-3 border-b">Cart</a>
+            <a id="m-loginLink" href="login.html" class="py-3 border-b">Login</a>
+            <a id="m-registerLink" href="register.html" class="hidden py-3 border-b">Register</a>
+            <span id="m-username" class="hidden py-3 border-b font-semibold"></span>
+            <button id="m-logoutBtn" onclick="logout()" class="hidden py-3 text-left text-red-500">Logout</button>
+        </div>
+    </nav>
+
+  <div class="max-w-4xl mx-auto mt-6 px-4 pb-10">
+    <h1 class="text-2xl font-bold mb-6">My Profile</h1>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- Left Card -->
+      <div class="bg-white p-6 rounded-xl shadow">
+        <div class="text-center">
+          <div class="relative w-20 h-20 mx-auto mb-3 group">
+            <div id="avatar"
+              class="w-20 h-20 bg-yellow-500 text-white rounded-full flex items-center justify-center text-2xl font-bold">
+              U</div>
+            <img id="avatar-img" src="" class="hidden w-20 h-20 rounded-full object-cover border-4 border-yellow-500">
+            <!-- upload button over image -->
+            <label for="avatarInput"
+              class="absolute bottom-0 right-0 bg-black text-white text- px-2 py-1 rounded-full cursor-pointer">✏️</label>
+          </div>
+          <input type="file" id="avatarInput" accept="image/*" class="hidden">
+          <p id="upload-status" class="text-xs text-gray-500 mt-2"></p>
+          <h2 class="font-bold text-lg" id="p-username">Loading...</h2>
+          <p class="text-sm text-gray-500" id="p-email"></p>
+          <p class="text-xs mt-2"><span id="p-role" class="bg-gray-100 px-2 py-1 rounded"></span></p>
+        </div>
+        <div class="mt-6 space-y-2 text-sm">
+          <p><strong>Joined:</strong> <span id="p-joined"></span></p>
+          <p><strong>Orders:</strong> <span id="p-order-count">0</span></p>
+        </div>
+      </div>
+
+      <!-- Right Form -->
+      <div class="md:col-span-2 space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow">
+          <h3 class="font-bold mb-4">Edit Information</h3>
+          <div id="profile-msg" class="hidden p-3 rounded mb-4 text-sm"></div>
+          <form id="profileForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1">Username</label>
+              <input id="edit-username" type="text" class="w-full p-2.5 border rounded-lg" required>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1">Email</label>
+              <input id="edit-email" type="email" class="w-full p-2.5 border rounded-lg bg-gray-100" readonly>
+              <p class="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1">Phone (for delivery)</label>
+              <input id="edit-phone" type="text" placeholder="080..." class="w-full p-2.5 border rounded-lg">
+            </div>
+            <button type="submit" class="bg-black text-white px-6 py-2.5 rounded-lg font-semibold w-full md:w-auto">Save
+              Changes</button>
+          </form>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+          <h3 class="font-bold mb-4">Change Password</h3>
+          <div id="pass-msg" class="hidden p-3 rounded mb-4 text-sm"></div>
+          <form id="passForm" class="space-y-3">
+            <input id="old-pass" type="password" placeholder="Current password" class="w-full p-2.5 border rounded-lg"
+              required>
+            <input id="new-pass" type="password" placeholder="New password" class="w-full p-2.5 border rounded-lg"
+              required>
+            <button type="submit" class="bg-yellow-500 text-white px-6 py-2.5 rounded-lg font-semibold">Update
+              Password</button>
+          </form>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+          <h3 class="font-bold mb-4">My Orders</h3>
+          <div id="my-orders" class="space-y-3">
+            <p class="text-gray-500 text-sm">Loading orders...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
+
+    function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+    document.getElementById('hamburger-btn').addEventListener('click', () => {
+      const m = document.getElementById('mobile-menu');
+      m.classList.toggle('hidden'); m.classList.toggle('flex'); m.classList.toggle('flex-col');
+    });
+
+
+
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        let user = await res.json();
+        // fallback to localStorage if endpoint not exist
+        if (!res.ok) user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        document.getElementById('p-username').textContent = user.username || 'User';
+        document.getElementById('p-email').textContent = user.email || '';
+        document.getElementById('p-role').textContent = (user.role || 'customer').toUpperCase();
+        document.getElementById('p-joined').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A';
+        const letterEl = document.getElementById('avatar');
+        const imgEl = document.getElementById('avatar-img');
+        if (user.avatar) {
+          imgEl.src = user.avatar;
+          imgEl.classList.remove('hidden');
+          letterEl.classList.add('hidden');
+        } else {
+          letterEl.textContent = (user.username || 'U')[0].toUpperCase();
+          letterEl.classList.remove('hidden');
+          imgEl.classList.add('hidden');
+        }
+        document.getElementById('edit-username').value = user.username || '';
+        document.getElementById('edit-email').value = user.email || '';
+        document.getElementById('edit-phone').value = user.phone || '';
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadMyOrders() {
+      try {
+        const res = await fetch('/api/orders/my-orders', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) throw new Error();
+        const orders = await res.json();
+        document.getElementById('p-order-count').textContent = orders.length;
+        const div = document.getElementById('my-orders');
+        if (!orders.length) { div.innerHTML = '<p class="text-sm text-gray-500">No orders yet</p>'; return; }
+        div.innerHTML = orders.slice(0, 5).map(o => `
+      <div class="border rounded-lg p-3 flex justify-between items-center">
+        <div><p class="font-mono text-sm">#${o.id}</p><p class="text-xs text-gray-500">${new Date(o.created_at).toLocaleDateString()} - ${o.status}</p></div>
+        <p class="font-bold">₦${o.total}</p>
+      </div>
+    `).join('') + '<a href="orders.html" class="text-sm text-blue-600 underline mt-2 inline-block">View all orders</a>';
+      } catch { document.getElementById('my-orders').innerHTML = '<p class="text-sm text-gray-500">Could not load orders</p>'; }
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('profile-msg');
+      try {
+        const res = await fetch('/api/auth/update-profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ username: document.getElementById('edit-username').value, phone: document.getElementById('edit-phone').value })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.textContent = '✅ Profile updated!'; msg.className = 'bg-green-100 text-green-700 p-3 rounded mb-4 text-sm';
+          const user = JSON.parse(localStorage.getItem('user') || '{}'); user.username = data.username || user.username; localStorage.setItem('user', JSON.stringify(user));
+          loadProfile();
+        } else { msg.textContent = '❌ ' + (data.msg || 'Failed'); msg.className = 'bg-red-100 text-red-700 p-3 rounded mb-4 text-sm'; }
+        msg.classList.remove('hidden');
+      } catch { msg.textContent = 'Server error'; msg.className = 'bg-red-100 text-red-700 p-3 rounded mb-4 text-sm'; msg.classList.remove('hidden'); }
+    });
+
+    document.getElementById('passForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('pass-msg');
+      try {
+        const res = await fetch('/api/auth/change-password', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ old_password: document.getElementById('old-pass').value, new_password: document.getElementById('new-pass').value })
+        });
+        const data = await res.json();
+        if (res.ok) { msg.textContent = '✅ Password changed!'; msg.className = 'bg-green-100 text-green-700 p-3 rounded mb-4 text-sm'; e.target.reset(); }
+        else { msg.textContent = '❌ ' + (data.msg || 'Failed'); msg.className = 'bg-red-100 text-red-700 p-3 rounded mb-4 text-sm'; }
+        msg.classList.remove('hidden');
+      } catch { msg.textContent = 'Server error'; msg.className = 'bg-red-100 text-red-700 p-3 rounded mb-4 text-sm'; msg.classList.remove('hidden'); }
+    });
+
+    document.getElementById('avatarInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const imgEl = document.getElementById('avatar-img');
+      const letterEl = document.getElementById('avatar');
+      imgEl.src = URL.createObjectURL(file);
+      imgEl.classList.remove('hidden');
+      letterEl.classList.add('hidden');
+
+      const status = document.getElementById('upload-status');
+      status.textContent = 'Uploading to Cloudinary...';
+
+      const fd = new FormData();
+      fd.append('avatar', file);
+
+      try {
+        const res = await fetch('/api/auth/upload-avatar', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token },
+          body: fd
+        });
+        const data = await res.json();
+        if (res.ok) {
+          status.textContent = '✅ Photo updated!';
+          // also update localStorage
+          const u = JSON.parse(localStorage.getItem('user') || '{}');
+          u.avatar = data.avatar;
+          localStorage.setItem('user', JSON.stringify(u));
+        } else {
+          status.textContent = '❌ ' + (data.msg || 'Failed');
+        }
+      } catch (err) {
+        status.textContent = '❌ Upload failed';
+      }
+    });
+
+    loadProfile(); loadMyOrders();
+  </script>
+</body>
+
+</html>
