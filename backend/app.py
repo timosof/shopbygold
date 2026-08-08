@@ -279,7 +279,11 @@ with app.app_context():
 
 
 
-
+@app.route("/fix-db")
+def fix_db():
+    db.drop_all()
+    db.create_all()
+    return "✅ Tables dropped and recreated with phone column. Now DELETE this route!"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
