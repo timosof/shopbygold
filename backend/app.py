@@ -41,12 +41,17 @@ app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER")
 print(f"MAIL USER: {app.config['MAIL_USERNAME']}")
 print(f"MAIL PASS SET: {bool(app.config['MAIL_PASSWORD'])}")
 
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_pre_ping": True,
-    "connect_args": {
-        "sslmode": "disable",
+database_url = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+if "render.com" in database_url or "postgres" in database_url:
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "connect_args": {"sslmode": "require"}
     }
-}
+else:
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "connect_args": {"sslmode": "disable"}
+    }
 
 app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "uploads")
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
