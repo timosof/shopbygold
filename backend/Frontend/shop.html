@@ -31,17 +31,13 @@
             }
         }
 
-        .cat-section {
-            margin-bottom: 24px
-        }
-
         .cat-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: #fff;
             padding: 12px 16px;
-            border: 1px solid #eee;
+            border: none;
             border-radius: 8px 8px 0 0;
         }
 
@@ -58,8 +54,7 @@
             scroll-behavior: smooth;
             padding: 12px;
             background: #fff;
-            border: 1px solid #eee;
-            border-top: none;
+            border: none;
             border-radius: 0 0 8px 8px
         }
 
@@ -71,11 +66,80 @@
             min-width: 165px;
             max-width: 165px;
             background: #fff;
-            border: 1px solid #eee;
+            border: none;
             border-radius: 8px;
             overflow: hidden;
             cursor: pointer;
-            flex-shrink: 0
+            flex-shrink: 0;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06)
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 220px 1fr 240px;
+            gap: 16px;
+            max-width: 1280px;
+            margin: 20px auto;
+            padding: 0 16px
+        }
+
+        .left-cat {
+            background: #fff;
+            border-radius: 12px;
+            padding: 8px
+        }
+
+        .left-cat a {
+            display: flex;
+            gap: 10px;
+            padding: 12px;
+            font-size: 13px;
+            border-bottom: 1px solid #f3f4f6;
+            text-decoration: none;
+            color: #333
+        }
+
+        .right-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .r-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px
+        }
+
+        @media(max-width:1023px) {
+            .main-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .side-wrapper .side-cat {
+            display: block
+        }
+
+        .side-wrapper .side-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        /* HIDE ON MOBILE - ONLY SHOW ON DESKTOP */
+        @media(max-width:1023px) {
+            .side-wrapper {
+                grid-template-columns: 1fr !important
+            }
+
+            .side-wrapper .side-cat {
+                display: none !important
+            }
+
+            .side-wrapper .side-contact {
+                display: none !important
+            }
         }
     </style>
 </head>
@@ -125,11 +189,51 @@
     </nav>
 
     <!-- HERO SLIDER - REPLACE YOUR WELCOME CARD WITH THIS -->
-    <div class="hero-slider" id="heroSlider" style="display:none">
-        <div class="slides" id="slides"></div>
-        <button class="slider-btn prev" onclick="moveSlide(-1)">&#10094;</button>
-        <button class="slider-btn next" onclick="moveSlide(1)">&#10095;</button>
-        <div class="dots" id="dots"></div>
+    <div style="max-width:1280px; margin:20px auto; padding:0 16px; display:grid; grid-template-columns:250px 1fr 250px; gap:16px; align-items:start"
+        class="side-wrapper">
+        <div class="side-cat" style="background:#fff; border-radius:12px; padding:8px; box-shadow:0 1px 4px rgba(0,0,0,.06)">
+            <a href="shop.html"
+                style="display:flex; gap:10px; padding:12px; font-size:13px; font-weight:700; text-decoration:none; color:#111; border-bottom:1px solid #f3f4f6">🏠
+                All Products</a>
+            <a href="shop.html?search=gadget deals"
+                style="display:flex; gap:10px; padding:12px; font-size:13px; text-decoration:none; color:#333; border-bottom:1px solid #f3f4f6">📱
+                Gadget deals</a>
+            <a href="shop.html?search=general"
+                style="display:flex; gap:10px; padding:12px; font-size:13px; text-decoration:none; color:#333; border-bottom:1px solid #f3f4f6">📦
+                General</a>
+            <a href="shop.html?search=flash sales"
+                style="display:flex; gap:10px; padding:12px; font-size:13px; text-decoration:none; color:#333; border-bottom:1px solid #f3f4f6">⚡
+                Flash Sales</a>
+            <a href="shop.html?search=tv"
+                style="display:flex; gap:10px; padding:12px; font-size:13px; text-decoration:none; color:#333">📺 Tv</a>
+        </div>
+
+        <div class="hero-slider" id="heroSlider" style="display:none">
+            <div class="slides" id="slides"></div>
+            <button class="slider-btn prev" onclick="moveSlide(-1)">&#10094;</button>
+            <button class="slider-btn next" onclick="moveSlide(1)">&#10095;</button>
+            <div class="dots" id="dots"></div>
+        </div>
+        <!-- SECOND SIDE - CONTACT -->
+        <div class="side-contact" style="display:flex; flex-direction:column; gap:12px">
+            <div style="background:#fff; border-radius:12px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.06)">
+                <div style="font-weight:700; font-size:13px">📞 CALL TO ORDER</div>
+                <div style="font-size:11px; color:#666; margin-top:4px">8am - 8pm daily</div>
+                <div style="font-weight:800; margin-top:8px">+234 7049 4448 86</div>
+                <button
+                    style="width:100%; padding:10px; border-radius:8px; background:#111; color:#fff; border:none; margin-top:8px; cursor:pointer"
+                    onclick="window.location.href='tel:+2347049444886'">Call Now</button>
+            </div>
+            <div style="background:#e8f5e9; border-radius:12px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.06)">
+                <div style="font-weight:700; font-size:13px">💬 Contact on Whatsapp</div>
+                <div style="font-size:11px; color:#333; margin-top:4px">Fast response</div>
+                <button
+                    style="width:100%; padding:10px; border-radius:8px; background:#25D366; color:#fff; border:none; margin-top:8px; cursor:pointer"
+                    onclick="window.open('https://wa.me/2347049444886','_blank')">Chat on Whatsapp</button>
+            </div>
+        </div>
+    </div>
+
     </div>
 
     <style>
@@ -281,7 +385,7 @@
                 catContainer.innerHTML = Object.keys(groups).map(catKey => { const displayName = catKey.charAt(0).toUpperCase() + catKey.slice(1); return `<div class="cat-section"><div class="cat-header"><span class="cat-title">${displayName}</span><a href="shop.html?search=${encodeURIComponent(catKey)}" style="color:#f68b1e; font-size:13px; font-weight:700; text-decoration:none">See All ></a></div><div class="cat-row">${groups[catKey].map(p => `<div class="cat-card" onclick="window.location.href='product.html?id=${p.id}'"><div style="height:165px; background:white; display:flex; align-items:center; justify-content:center; padding:8px"><img src="${getImageUrl(p.image_url)}" style="max-width:100%; max-height:100%; object-fit:contain"></div><div style="padding:8px 10px; border-top:1px solid #f3f4f6"><div style="font-size:12px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${p.name}</div><div style="font-size:12px; font-weight:700; color:#333; margin-top:4px">NGN ${Number(p.price).toLocaleString()}</div></div></div>`).join('')}</div></div>`; }).join('');
             } catch (err) { document.getElementById('loading').textContent = 'Oops! Something went wrong.'; console.error(err); }
         }
-    
+
 
         // handles adding product to cart with specified quantity
         async function handleAdd(productId) {
