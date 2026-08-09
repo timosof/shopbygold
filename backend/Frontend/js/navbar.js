@@ -90,18 +90,35 @@ function logout() {
     window.location.href = 'login.html';
 }
 
+// async function updateCartCount() {
+//     const token = localStorage.getItem('token');
+//     const el = document.getElementById('cart-count');
+//     if (!el) return;
+//     if (!token) { el.textContent = '0'; return; }
+//     try {
+//         const res = await fetch('/api/cart', { headers: { 'Authorization': 'Bearer ' + token } });
+//         if (!res.ok) { el.textContent = '0'; return; }
+//         const data = await res.json();
+//         const items = data.items || data.cart?.items || [];
+//         el.textContent = items.reduce((s, i) => s + (i.quantity || 0), 0);
+//     } catch { el.textContent = '0'; }
+// }
+
 async function updateCartCount() {
     const token = localStorage.getItem('token');
     const el = document.getElementById('cart-count');
-    if (!el) return;
-    if (!token) { el.textContent = '0'; return; }
+    const btmEl = document.getElementById('btm-cart-count');
+    if (!el && !btmEl) return;
+    if (!token) { if(el) el.textContent = '0'; if(btmEl) { btmEl.textContent='0'; btmEl.style.display='none'; } return; }
     try {
         const res = await fetch('/api/cart', { headers: { 'Authorization': 'Bearer ' + token } });
-        if (!res.ok) { el.textContent = '0'; return; }
+        if (!res.ok) { if(el) el.textContent = '0'; if(btmEl) btmEl.style.display='none'; return; }
         const data = await res.json();
         const items = data.items || data.cart?.items || [];
-        el.textContent = items.reduce((s, i) => s + (i.quantity || 0), 0);
-    } catch { el.textContent = '0'; }
+        const count = items.reduce((s, i) => s + (i.quantity || 0), 0);
+        if(el) el.textContent = count;
+        if(btmEl) { btmEl.textContent = count; btmEl.style.display = count>0 ? 'flex' : 'none'; }
+    } catch { if(el) el.textContent = '0'; if(btmEl) btmEl.style.display='none'; }
 }
 
 async function addToCart(productId) {
@@ -127,5 +144,18 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.key === 'Enter') { const q = e.target.value.trim(); location.href = q ? 'shop.html?search=' + encodeURIComponent(q) : 'shop.html'; }
         });
     }
+
+        // highlight bottom nav active
+    const path = window.location.pathname;
+    document.querySelectorAll('#bottom-nav a').forEach(a=>{
+        const href = a.getAttribute('href');
+        if(href && path.includes(href.replace('.html',''))){
+            a.classList.add('active');
+        }
+        // special: shop.html = Home + Shop both active
+        if(path.includes('shop.html') && (href==='shop.html')){
+            a.classList.add('active');
+        }
+    });
 });
 
