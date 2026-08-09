@@ -221,23 +221,35 @@
           document.getElementById('edit-phone').value = user.phone || '';
         }
 
-        // show profile actions - ALWAYS RUN, even if API fail
+                // === ADMIN CHECK - ONLY IN PROFILE.HTML ===
         const token2 = localStorage.getItem('token');
-        if (token2 && user && user.username) {
-          document.getElementById('action-orders')?.classList.remove('hidden');
-          document.getElementById('action-logout')?.classList.remove('hidden');
-          if (user.role === 'admin' || user.is_admin) {
-            document.getElementById('action-admin')?.classList.remove('hidden');
-            document.getElementById('adminLink')?.classList.remove('hidden');
-            document.getElementById('m-adminLink')?.classList.remove('hidden');
-            document.getElementById('ordersLink')?.classList.remove('hidden');
-            document.getElementById('m-ordersLink')?.classList.remove('hidden');
-          }
-        } else {
-          document.getElementById('action-login')?.classList.remove('hidden');
-          document.getElementById('action-register')?.classList.remove('hidden');
-        }
+        const isLogged = token2 && user && user.username;
+        const isAdmin = isLogged && user.role === 'admin';
 
+        // show/hide based on login
+        document.getElementById('action-orders')?.classList.toggle('hidden', !isLogged);
+        document.getElementById('action-logout')?.classList.toggle('hidden', !isLogged);
+        document.getElementById('ordersLink')?.classList.toggle('hidden', !isLogged);
+        document.getElementById('m-ordersLink')?.classList.toggle('hidden', !isLogged);
+        document.getElementById('action-login')?.classList.toggle('hidden', isLogged);
+        document.getElementById('action-register')?.classList.toggle('hidden', isLogged);
+
+        // admin - ONLY if role === admin
+        const adminBtn = document.getElementById('action-admin');
+        const topAdmin = document.getElementById('adminLink');
+        const mAdmin = document.getElementById('m-adminLink');
+
+        if (isAdmin) {
+          adminBtn?.classList.remove('hidden');
+          if(adminBtn) adminBtn.style.display = 'block';
+          topAdmin?.classList.remove('hidden');
+          mAdmin?.classList.remove('hidden');
+        } else {
+          if(adminBtn){ adminBtn.classList.add('hidden'); adminBtn.style.display = 'none'; }
+          topAdmin?.classList.add('hidden');
+          mAdmin?.classList.add('hidden');
+        }
+        
       } catch (e) {
         console.error(e);
         // force show login buttons even on error
