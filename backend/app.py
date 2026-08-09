@@ -276,15 +276,17 @@ def serve_frontend(path):
 
 
 with app.app_context():
+    db.create_all()
+    # AUTO FIX Postgres sequence bug for order_items
     try:
-        # Dispose any bad connections
-        db.engine.dispose()
-        db.create_all()
-        print("✅ Database tables created")
-        print(f"MAIL USER: {app.config.get('MAIL_USERNAME')}")
-        print(f"MAIL PASS SET: {bool(app.config.get('MAIL_PASSWORD'))}")
+        from sqlalchemy import text
+        db.session.execute(text("SELECT setval(pg_get_serial_sequence('order_items', 'id'), COALESCE((SELECT MAX(id) FROM order_items), 0) + 1, false)"))
+        db.session.execute(text("SELECT setval(pg_get_serial_sequence('orders', 'id'), COALESCE((SELECT MAX(id) FROM orders), 0) + 1, false)"))
+        db.session.commit()
+        print("DB sequences fixed")
     except Exception as e:
-        print(f"DB init error: {e}")
+        print(f"Sequence fix skipped: {e}")
+        db.session.rollback()
 
 
 
