@@ -263,6 +263,19 @@ def check_ai_cart():
     return jsonify({"abandoned": False})
 # ===== END STEP 3 =====
 
+@app.route('/api/admin/fix-sequence', methods=['GET'])
+def fix_sequence():
+    try:
+        from sqlalchemy import text
+        # fix products id sequence
+        db.session.execute(text("SELECT setval(pg_get_serial_sequence('products', 'id'), COALESCE((SELECT MAX(id) FROM products),0) + 1, false)"))
+        db.session.commit()
+        max_id = db.session.execute(text("SELECT MAX(id) FROM products")).scalar()
+        return {"msg": f"Fixed! Next id will be {max_id+1}", "max_id": max_id}
+    except Exception as e:
+        return {"error": str(e)}, 500
+        
+
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve_frontend(path):
