@@ -11,6 +11,26 @@
     <!-- favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/png" href="/favicon.svg">
+
+    <style>
+        @media(min-width:640px) {
+            #products-grid {
+                grid-template-columns: repeat(3, 1fr) !important
+            }
+        }
+
+        @media(min-width:768px) {
+            #products-grid {
+                grid-template-columns: repeat(4, 1fr) !important
+            }
+        }
+
+        @media(min-width:1024px) {
+            #products-grid {
+                grid-template-columns: repeat(6, 1fr) !important
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -176,7 +196,7 @@
 
     <div class="max-w-6xl mx-auto mt-8 px-4 pb-10">
         <!-- <h1 class="text-3xl font-bold mb-8">All Products</h1> -->
-        <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6"></div>
+        <div id="products-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px"></div>
         <div id="loading" class="text-center py-10 text-gray-500">Loading products...</div>
     </div>
 
@@ -225,27 +245,14 @@
                 }
 
                 grid.innerHTML = products.map(function (p) {
-                    const isOut = p.stock <= 0;
-                    return '<div class="bg-white rounded-lg shadow-md overflow-hidden">' +
-                        '<div onclick="window.location.href=\'product.html?id=' + p.id + '\'" class="cursor-pointer">' +
-                        '<img src="' + getImageUrl(p.image_url) + '" class="w-full h-48 object-cover">' +
-                        '<div class="p-4">' +
-                        '<h3 class="font-bold text-lg mb-2">' + p.name + '</h3>' +
-                        '<p class="text-gray-600 text-sm mb-2">' + (p.description || '') + '</p>' +
-                        '<p class="text-gray-500 text-xs mb-3">Stock: ' + p.stock + '</p>' +
+                    return '<div onclick="window.location.href=\'product.html?id=' + p.id + '\'" style="background:white; border:1px solid #eee; border-radius:8px; overflow:hidden; cursor:pointer; display:flex; flex-direction:column">' +
+                        '<div style="height:190px; background:white; display:flex; align-items:center; justify-content:center; padding:6px">' +
+                        '<img src="' + getImageUrl(p.image_url) + '" style="max-width:100%; max-height:100%; object-fit:contain">' +
                         '</div>' +
-                        '</div>' +
-                        '<div class="px-4 pb-4">' +
-                        '<div class="flex gap-2 items-center mb-2">' +
-                        '<label class="text-sm">Qty:</label>' +
-                        '<input type="number" id="qty-' + p.id + '" value="1" min="1" max="' + p.stock + '" class="w-16 border rounded px-2 py-1 text-sm">' +
-                        '</div>' +
-                        '<div class="flex justify-between items-center">' +
-                        '<span class="text-xl font-bold text-yellow-600">NGN ' + p.price + '</span>' +
-                        '<button ' + (isOut ? 'disabled' : '') + ' onclick="handleAdd(' + p.id + ')" class="' + (isOut ? 'bg-gray-400 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600') + ' text-white px-4 py-2 rounded">' +
-                        (p.stock === 0 ? 'Sold Out' : 'Add to Cart') +
-                        '</button>' +
-                        '</div>' +
+                        '<div style="padding:8px 10px; border-top:1px solid #f3f4f6">' +
+                        '<div style="font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">' + p.name + '</div>' +
+                        '<div style="font-size:11px; color:#999; margin-top:2px">Stock: ' + p.stock + '</div>' +
+                        '<div style="font-size:13px; font-weight:700; color:#555; margin-top:3px">NGN ' + Number(p.price).toLocaleString() + '</div>' +
                         '</div>' +
                         '</div>';
                 }).join('');
@@ -359,103 +366,144 @@
 
     </script>
     <!-- STEP 1: CHAT BOX LOOK ONLY -->
-<style>
-#ai-chat-btn { 
-  position:fixed; bottom:20px; right:20px; 
-  background:rgb(0, 0, 0); color:white; 
-  width:60px; height:60px; border-radius:50%; 
-  border:none; font-size:26px; cursor:pointer; z-index:9999; 
-}
-#ai-chat-box { 
-  position:fixed; bottom:90px; right:20px; 
-  width:320px; height:400px; background:white; 
-  border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.2); 
-  display:none; flex-direction:column; z-index:9999; 
-  font-family: Arial, sans-serif;
-}
-#ai-chat-header { background:black; color:white; padding:14px; border-radius:16px 16px 0 0; }
-#ai-chat-messages { flex:1; padding:15px; overflow-y:auto; font-size:14px; }
-#ai-chat-input-area { display:flex; padding:10px; border-top:1px solid #eee; }
-#ai-chat-input { flex:1; border:1px solid #ddd; border-radius:8px; padding:8px; outline:none; }
-</style>
+    <style>
+        #ai-chat-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgb(0, 0, 0);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 26px;
+            cursor: pointer;
+            z-index: 9999;
+        }
 
-<button id="ai-chat-btn">💬</button>
+        #ai-chat-box {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 320px;
+            height: 400px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+        }
 
-<div id="ai-chat-box">
-  <div id="ai-chat-header">Shop Assistant</div>
-  <div id="ai-chat-messages">
-    Hi! How can I help you today?
-  </div>
-  <div id="ai-chat-input-area">
-    <input id="ai-chat-input" placeholder="Type message..." />
-    <button id="ai-chat-send" style="background:rgb(0, 0, 0);color:white;border:none;padding:8px 12px;border-radius:8px;margin-left:6px;cursor:pointer;">Send</button>
-  </div>
-</div>
+        #ai-chat-header {
+            background: black;
+            color: white;
+            padding: 14px;
+            border-radius: 16px 16px 0 0;
+        }
 
-<script>
-const chatBtn = document.getElementById('ai-chat-btn');
-const chatBox = document.getElementById('ai-chat-box');
-const messagesDiv = document.getElementById('ai-chat-messages');
-const chatInput = document.getElementById('ai-chat-input');
-const chatSendBtn = document.getElementById('ai-chat-send');
+        #ai-chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
 
-chatBtn.onclick = () => {
-  chatBox.style.display = chatBox.style.display === 'flex'? 'none' : 'flex';
-}
+        #ai-chat-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
 
-async function getToken() {
-  return localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('jwt') || sessionStorage.getItem('access_token') || '';
-}
+        #ai-chat-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 8px;
+            outline: none;
+        }
+    </style>
 
-async function sendChat() {
-  const text = chatInput.value.trim();
-  if(!text) return;
-  messagesDiv.innerHTML += `<div style="background:black;color:white;padding:8px 12px;border-radius:12px;margin:8px 0;margin-left:auto;max-width:80%;width:fit-content;">${text}</div>`;
-  chatInput.value = '';
+    <button id="ai-chat-btn">💬</button>
 
-  let cart = JSON.parse(localStorage.getItem('cart') || localStorage.getItem('cartItems') || '[]');
-  let token = await getToken();
-  const headers = {'Content-Type': 'application/json'};
-  if(token) headers['Authorization'] = 'Bearer ' + token;
+    <div id="ai-chat-box">
+        <div id="ai-chat-header">Shop Assistant</div>
+        <div id="ai-chat-messages">
+            Hi! How can I help you today?
+        </div>
+        <div id="ai-chat-input-area">
+            <input id="ai-chat-input" placeholder="Type message..." />
+            <button id="ai-chat-send"
+                style="background:rgb(0, 0, 0);color:white;border:none;padding:8px 12px;border-radius:8px;margin-left:6px;cursor:pointer;">Send</button>
+        </div>
+    </div>
 
-  const res = await fetch('/api/ai-chat', {
-    method: 'POST',
-    headers: headers,
-    body: JSON.stringify({ message: text, cart: cart })
-  });
-  const data = await res.json();
-  
-  messagesDiv.innerHTML += `<div style="background:#f1f1f1;padding:8px 12px;border-radius:12px;margin:8px 0;max-width:80%;width:fit-content;">${data.reply}</div>`;
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
+    <script>
+        const chatBtn = document.getElementById('ai-chat-btn');
+        const chatBox = document.getElementById('ai-chat-box');
+        const messagesDiv = document.getElementById('ai-chat-messages');
+        const chatInput = document.getElementById('ai-chat-input');
+        const chatSendBtn = document.getElementById('ai-chat-send');
 
-chatSendBtn.onclick = sendChat;
-chatInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChat(); });
+        chatBtn.onclick = () => {
+            chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex';
+        }
 
-// --- AUTO POPUP FOR LOGGED IN USERS ---
-setInterval(async () => {
-  try {
-    let token = await getToken();
-    const headers = {'Content-Type': 'application/json'};
-    if(token) headers['Authorization'] = 'Bearer ' + token;
+        async function getToken() {
+            return localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('jwt') || sessionStorage.getItem('access_token') || '';
+        }
 
-    const res = await fetch('/api/ai-cart/check', { 
-      method: 'POST',
-      headers: headers
-    });
-    const data = await res.json();
-    console.log("Check abandoned:", data);
-    if(data.abandoned) {
-      chatBox.style.display = 'flex';
-      messagesDiv.innerHTML += `<div style="background:#f1f1f1;padding:10px 12px;border-radius:12px;margin:8px 0;max-width:85%;">${data.message}<br><br><button onclick="window.location.href='/checkout.html'" style="background:black;color:white;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;">Checkout Now</button></div>`;
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-  } catch(e) { console.log(e) }
-}, 60000); // check every 1 minute for testing
-</script>
+        async function sendChat() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            messagesDiv.innerHTML += `<div style="background:black;color:white;padding:8px 12px;border-radius:12px;margin:8px 0;margin-left:auto;max-width:80%;width:fit-content;">${text}</div>`;
+            chatInput.value = '';
 
-<!-- END STEP 1 -->
- 
+            let cart = JSON.parse(localStorage.getItem('cart') || localStorage.getItem('cartItems') || '[]');
+            let token = await getToken();
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+
+            const res = await fetch('/api/ai-chat', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ message: text, cart: cart })
+            });
+            const data = await res.json();
+
+            messagesDiv.innerHTML += `<div style="background:#f1f1f1;padding:8px 12px;border-radius:12px;margin:8px 0;max-width:80%;width:fit-content;">${data.reply}</div>`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        chatSendBtn.onclick = sendChat;
+        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChat(); });
+
+        // --- AUTO POPUP FOR LOGGED IN USERS ---
+        setInterval(async () => {
+            try {
+                let token = await getToken();
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+
+                const res = await fetch('/api/ai-cart/check', {
+                    method: 'POST',
+                    headers: headers
+                });
+                const data = await res.json();
+                console.log("Check abandoned:", data);
+                if (data.abandoned) {
+                    chatBox.style.display = 'flex';
+                    messagesDiv.innerHTML += `<div style="background:#f1f1f1;padding:10px 12px;border-radius:12px;margin:8px 0;max-width:85%;">${data.message}<br><br><button onclick="window.location.href='/checkout.html'" style="background:black;color:white;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;">Checkout Now</button></div>`;
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            } catch (e) { console.log(e) }
+        }, 60000); // check every 1 minute for testing
+    </script>
+
+    <!-- END STEP 1 -->
+
 </body>
 
 </html>
