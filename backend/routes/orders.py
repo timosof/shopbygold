@@ -8,6 +8,16 @@ import requests
 import json
 import uuid
 import traceback
+from sqlalchemy import text
+
+def fix_pg_sequences():
+    try:
+        db.session.execute(text("SELECT setval(pg_get_serial_sequence('order_items', 'id'), COALESCE((SELECT MAX(id) FROM order_items), 0) + 1, false)"))
+        db.session.execute(text("SELECT setval(pg_get_serial_sequence('orders', 'id'), COALESCE((SELECT MAX(id) FROM orders), 0) + 1, false)"))
+        db.session.commit()
+    except Exception as e:
+        print(f"Sequence fix: {e}")
+        db.session.rollback()
 
 orders_bp = Blueprint('orders', __name__, url_prefix='/api/orders')
 
@@ -119,6 +129,7 @@ def initialize_paystack():
 def verify_paystack(reference):
     import threading
     try:
+        fix_pg_sequences()
         user_id = int(get_jwt_identity())
         
         secret = current_app.config.get("PAYSTACK_SECRET_KEY") or os.getenv("PAYSTACK_SECRET_KEY")
@@ -218,6 +229,7 @@ def verify_paystack(reference):
 @jwt_required()
 def create_order():
     try:
+        fix_pg_sequences()
         user_id = get_jwt_identity()
         data = request.get_json()
         
