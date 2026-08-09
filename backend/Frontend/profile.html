@@ -100,8 +100,8 @@
           <!-- Logged in actions -->
           <a id="action-orders" href="orders.html"
             class="hidden w-full block text-center bg-black text-white py-2.5 rounded-lg font-semibold">My Orders</a>
-          <a id="action-admin" href="admin.html"
-            class="hidden w-full block text-center bg-blue-600 text-white py-2.5 rounded-lg font-semibold">Admin
+          <a id="action-admin" href="admin.html" class="hidden w-full block text-center py-2.5 rounded-lg font-semibold"
+            style="background:#2563eb; color:white; display:block; text-decoration:none; margin-top:8px">Admin
             Dashboard</a>
           <button id="action-logout" onclick="logout()"
             class="hidden w-full bg-red-50 text-red-600 py-2.5 rounded-lg font-semibold">Logout</button>
@@ -172,6 +172,10 @@
     // });
 
 
+    document.getElementById('hamburger-btn')?.addEventListener('click', () => {
+      const m = document.getElementById('mobile-menu');
+      m.classList.toggle('hidden'); m.classList.toggle('flex'); m.classList.toggle('flex-col');
+    });
 
     async function loadProfile() {
       try {
@@ -222,7 +226,13 @@
         if (token2 && user && user.username) {
           document.getElementById('action-orders')?.classList.remove('hidden');
           document.getElementById('action-logout')?.classList.remove('hidden');
-          if (user.role === 'admin' || user.is_admin) document.getElementById('action-admin')?.classList.remove('hidden');
+          if (user.role === 'admin' || user.is_admin) {
+            document.getElementById('action-admin')?.classList.remove('hidden');
+            document.getElementById('adminLink')?.classList.remove('hidden');
+            document.getElementById('m-adminLink')?.classList.remove('hidden');
+            document.getElementById('ordersLink')?.classList.remove('hidden');
+            document.getElementById('m-ordersLink')?.classList.remove('hidden');
+          }
         } else {
           document.getElementById('action-login')?.classList.remove('hidden');
           document.getElementById('action-register')?.classList.remove('hidden');
@@ -329,14 +339,14 @@
   </script>
   <!-- AI CHAT WIDGET - Shows on all pages -->
   <div id="ai-chat-btn"
-        style="position:fixed; bottom:25px; right:25px; background:#000; color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,0.3); z-index:9999">
-        <span id="ai-notif-dot"
-            style="position:absolute; top:2px; right:2px; width:14px; height:14px; background:red; border-radius:50%; border:2px solid white; display:none"></span>
-        <span style="font-size:28px">🤖</span>
-        <div
-            style="position:absolute; right:70px; white-space:nowrap; background:black; color:white; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600">
-            Click Me</div>
-    </div>
+    style="position:fixed; bottom:25px; right:25px; background:#000; color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,0.3); z-index:9999">
+    <span id="ai-notif-dot"
+      style="position:absolute; top:2px; right:2px; width:14px; height:14px; background:red; border-radius:50%; border:2px solid white; display:none"></span>
+    <span style="font-size:28px">🤖</span>
+    <div
+      style="position:absolute; right:70px; white-space:nowrap; background:black; color:white; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600">
+      Click Me</div>
+  </div>
 
   <div id="ai-chat-box"
     style="position:fixed;bottom:90px;right:20px;width:350px;max-width:90vw;height:450px;background:white;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.2);display:none;flex-direction:column;z-index:9999;overflow:hidden;">
