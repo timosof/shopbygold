@@ -30,6 +30,53 @@
                 grid-template-columns: repeat(6, 1fr) !important
             }
         }
+
+        .cat-section {
+            margin-bottom: 24px
+        }
+
+        .cat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 12px 16px;
+            border: 1px solid #eee;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .cat-title {
+            font-weight: 700;
+            font-size: 15px;
+            text-transform: uppercase
+        }
+
+        .cat-row {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 12px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-top: none;
+            border-radius: 0 0 8px 8px
+        }
+
+        .cat-row::-webkit-scrollbar {
+            display: none
+        }
+
+        .cat-card {
+            min-width: 165px;
+            max-width: 165px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            flex-shrink: 0
+        }
     </style>
 </head>
 
@@ -196,7 +243,8 @@
 
     <div class="max-w-6xl mx-auto mt-8 px-4 pb-10">
         <!-- <h1 class="text-3xl font-bold mb-8">All Products</h1> -->
-        <div id="products-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px"></div>
+        <div id="categories-container"></div>
+        <div id="products-grid" style="display:none; grid-template-columns:repeat(2,1fr); gap:12px"></div>
         <div id="loading" class="text-center py-10 text-gray-500">Loading products...</div>
     </div>
 
@@ -216,51 +264,24 @@
             try {
                 const params = new URLSearchParams(window.location.search);
                 const q = params.get('search');
-
-                let url = '/api/products/';
-                let titleEl = document.querySelector('h1.text-3xl');
-
-                if (q) {
-                    url = '/api/products/search?q=' + encodeURIComponent(q);
-                    if (titleEl) titleEl.textContent = 'Search results for "' + q + '"';
-                    console.log("Searching for:", q);
-                } else {
-                    if (titleEl) titleEl.textContent = 'All Products';
-                }
-
+                const url = q ? '/api/products/search?q=' + encodeURIComponent(q) : '/api/products/';
                 const res = await fetch(url);
                 const products = await res.json();
-                console.log("Got products:", products.length);
-
-                const grid = document.getElementById('products-grid');
                 const loading = document.getElementById('loading');
+                const grid = document.getElementById('products-grid');
+                const catContainer = document.getElementById('categories-container');
                 loading.style.display = 'none';
-
-                if (products.length === 0) {
-                    grid.innerHTML = `<div class="col-span-4 text-center py-20">
-                <p class="text-xl mb-2">No products found for "<b>${q}</b>"</p>
-                <a href="shop.html" class="text-yellow-600 underline">Clear search → Show all</a>
-            </div>`;
-                    return;
+                if (products.length === 0) { catContainer.innerHTML = `<div class="text-center py-20">No products found</div>`; return; }
+                if (q) {
+                    catContainer.style.display = 'none'; grid.style.display = 'grid';
+                    grid.innerHTML = products.map(function (p) { return '<div onclick="window.location.href=\'product.html?id=' + p.id + '\'" style="background:white; border:1px solid #eee; border-radius:8px; overflow:hidden; cursor:pointer; display:flex; flex-direction:column"><div style="height:190px; background:white; display:flex; align-items:center; justify-content:center; padding:6px"><img src="' + getImageUrl(p.image_url) + '" style="max-width:100%; max-height:100%; object-fit:contain"></div><div style="padding:8px 10px; border-top:1px solid #f3f4f6"><div style="font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">' + p.name + '</div><div style="font-size:11px; color:#999; margin-top:2px">Stock: ' + p.stock + '</div><div style="font-size:13px; font-weight:700; color:#555; margin-top:3px">NGN ' + Number(p.price).toLocaleString() + '</div></div></div>'; }).join(''); return;
                 }
-
-                grid.innerHTML = products.map(function (p) {
-                    return '<div onclick="window.location.href=\'product.html?id=' + p.id + '\'" style="background:white; border:1px solid #eee; border-radius:8px; overflow:hidden; cursor:pointer; display:flex; flex-direction:column">' +
-                        '<div style="height:190px; background:white; display:flex; align-items:center; justify-content:center; padding:6px">' +
-                        '<img src="' + getImageUrl(p.image_url) + '" style="max-width:100%; max-height:100%; object-fit:contain">' +
-                        '</div>' +
-                        '<div style="padding:8px 10px; border-top:1px solid #f3f4f6">' +
-                        '<div style="font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">' + p.name + '</div>' +
-                        '<div style="font-size:11px; color:#999; margin-top:2px">Stock: ' + p.stock + '</div>' +
-                        '<div style="font-size:13px; font-weight:700; color:#555; margin-top:3px">NGN ' + Number(p.price).toLocaleString() + '</div>' +
-                        '</div>' +
-                        '</div>';
-                }).join('');
-            } catch (err) {
-                document.getElementById('loading').textContent = 'Oops! Something went wrong.';
-                console.error(err);
-            }
+                grid.style.display = 'none'; catContainer.style.display = 'block';
+                const groups = {}; products.forEach(p => { let cat = (p.category || 'general').trim().toLowerCase(); if (!groups[cat]) groups[cat] = []; groups[cat].push(p); });
+                catContainer.innerHTML = Object.keys(groups).map(catKey => { const displayName = catKey.charAt(0).toUpperCase() + catKey.slice(1); return `<div class="cat-section"><div class="cat-header"><span class="cat-title">${displayName}</span><a href="shop.html?search=${encodeURIComponent(catKey)}" style="color:#f68b1e; font-size:13px; font-weight:700; text-decoration:none">See All ></a></div><div class="cat-row">${groups[catKey].map(p => `<div class="cat-card" onclick="window.location.href='product.html?id=${p.id}'"><div style="height:165px; background:white; display:flex; align-items:center; justify-content:center; padding:8px"><img src="${getImageUrl(p.image_url)}" style="max-width:100%; max-height:100%; object-fit:contain"></div><div style="padding:8px 10px; border-top:1px solid #f3f4f6"><div style="font-size:12px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${p.name}</div><div style="font-size:12px; font-weight:700; color:#333; margin-top:4px">NGN ${Number(p.price).toLocaleString()}</div></div></div>`).join('')}</div></div>`; }).join('');
+            } catch (err) { document.getElementById('loading').textContent = 'Oops! Something went wrong.'; console.error(err); }
         }
+    
 
         // handles adding product to cart with specified quantity
         async function handleAdd(productId) {
