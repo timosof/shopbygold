@@ -55,6 +55,7 @@
                 <button class="tab-btn text-gray-600 px-4 py-2 rounded" data-tab="settings">Settings</button>
                 <button class="tab-btn text-gray-600 px-4 py-2 rounded" data-tab="slider">Hero Slider</button>
                 <button class="tab-btn text-gray-600 px-4 py-2 rounded" data-tab="abandoned">Abandoned Carts</button>
+                <button class="tab-btn text-gray-600 px-4 py-2 rounded" data-tab="newsletter">Newsletter 📧</button>
             </div>
 
             <!-- Users Tab -->
@@ -261,6 +262,32 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Newsletter Tab -->
+<div id="newsletter-tab" class="tab-content hidden bg-white p-6 rounded-lg shadow-md">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Newsletter Subscribers - <span id="news-count">0</span></h2>
+        <div class="flex gap-2">
+            <button onclick="exportNewsletterCSV()" class="bg-black text-white px-4 py-2 rounded text-sm">Export CSV</button>
+            <button onclick="loadNewsletter()" class="bg-yellow-500 text-white px-4 py-2 rounded text-sm">Refresh</button>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="p-3 text-left">#</th>
+                    <th class="p-3 text-left">Email</th>
+                    <th class="p-3 text-left">Date</th>
+                    <th class="p-3 text-left">Action</th>
+                </tr>
+            </thead>
+            <tbody id="newsletter-table">
+                <tr><td colspan="4" class="p-4 text-center text-gray-500">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
             <script>
                 const NIGERIA_STATES = ["Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara", "FCT"];
@@ -1053,6 +1080,63 @@
                         } catch (e) { console.log(e) }
                     }, 60000); // check every 1 min
                 })();
+
+                // === NEWSLETTER LOGIC ===
+let allNewsletter = [];
+
+async function loadNewsletter() {
+    const tbody = document.getElementById('newsletter-table');
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center">Loading...</td></tr>';
+    try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/newsletter/list', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if(!res.ok) throw new Error('Failed');
+        allNewsletter = await res.json();
+        document.getElementById('news-count').textContent = allNewsletter.length;
+
+        if(allNewsletter.length === 0){
+            tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center">No subscribers yet</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = allNewsletter.map((s, i) => {
+            const date = s.created_at? new Date(s.created_at).toLocaleDateString('en-GB') : (s.date || 'N/A');
+            return `<tr class="border-b hover:bg-gray-50">
+                <td class="p-3">${i+1}</td>
+                <td class="p-3 font-semibold">${s.email}</td>
+                <td class="p-3 text-sm">${date}</td>
+                <td class="p-3"><button onclick="deleteNewsletter('${s.email}')" class="text-red-500 hover:underline text-sm">Delete</button></td>
+            </tr>`;
+        }).join('');
+    } catch(e){
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Failed to load: '+e.message+'</td></tr>';
+    }
+}
+
+async function deleteNewsletter(email){
+    if(!confirm('Delete '+email+'?')) return;
+    const token = localStorage.getItem('token');
+    await fetch('/api/newsletter/delete', {
+        method: 'DELETE',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body: JSON.stringify({email})
+    });
+    loadNewsletter();
+}
+
+function exportNewsletterCSV(){
+    if(allNewsletter.length===0){ alert('No data'); return; }
+    let csv = "Email,Date\n" + allNewsletter.map(s => `${s.email},${s.created_at||s.date||''}`).join("\n");
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='shopbygold_newsletter.csv'; a.click();
+}
+
+// Auto load when tab clicked
+document.querySelector('[data-tab="newsletter"]')?.addEventListener('click', loadNewsletter);
             </script>
 </body>
 
