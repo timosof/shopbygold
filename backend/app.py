@@ -303,8 +303,27 @@ with app.app_context():
 
 
 # email alert for new newsletter subscription
-import smtplib
-from email.mime.text import MIMEText
+import threading
+
+def send_alert_async(email_to_notify):
+    try:
+        import os, smtplib
+        from email.mime.text import MIMEText
+        sender = os.getenv("MAIL_USER", "timothyokanlawon99@gmail.com")
+        app_password = os.getenv("MAIL_PASSWORD") or os.getenv("EMAIL_PASSWORD") or os.getenv("GOOGLE_APP_PASSWORD")
+        if not app_password:
+            print("No mail password in env")
+            return
+        msg = MIMEText(f"New newsletter subscriber: {email_to_notify}\n\nFrom ShopByGold")
+        msg['Subject'] = "New Subscriber - ShopByGold"
+        msg['From'] = sender
+        msg['To'] = sender
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
+            server.login(sender, app_password)
+            server.send_message(msg)
+        print("Alert sent for", email_to_notify)
+    except Exception as e:
+        print("Background mail failed:", e)
 
 @app.route('/api/newsletter/subscribe', methods=['POST'])
 def subscribe_newsletter():
@@ -318,29 +337,12 @@ def subscribe_newsletter():
             return jsonify({"msg": "You already subscribed"}), 200
         db.session.add(Newsletter(email=email))
         db.session.commit()
-
-        # --- SEND ALERT USING .env ---
-        try:
-            sender = os.getenv("MAIL_USERNAME", "timothyokanlawon99@gmail.com")
-            app_password = os.getenv("MAIL_PASSWORD") or os.getenv("EMAIL_PASSWORD") or os.getenv("GOOGLE_APP_PASSWORD")
-            
-            if app_password:
-                msg = MIMEText(f"New subscriber: {email}\n\nFrom ShopByGold footer")
-                msg['Subject'] = "New Subscriber - ShopByGold"
-                msg['From'] = sender
-                msg['To'] = sender
-
-                with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                    server.login(sender, app_password)
-                    server.send_message(msg)
-                print("Alert sent to", sender)
-        except Exception as mail_e:
-            print("Mail failed but saved:", mail_e)
-
+        # Send email in background - no delay
+        threading.Thread(target=send_alert_async, args=(email,), daemon=True).start()
         return jsonify({"msg": "Subscribed successfully!"}), 200
     except Exception as e:
         db.session.rollback()
-        print("Error:", e)
+        print("Subscribe error:", e)
         return jsonify({"msg": f"Error: {str(e)}"}), 500
         
 
