@@ -359,118 +359,153 @@
     </script>
 
 
-        <!-- SHOPBYGOLD FOOTER - Dark Distinct -->
-    <footer class="mt-20" style="background:#0f0f0f; color:#b5b5b5;">
-        <!-- Top Newsletter - Gold Accent -->
+    <!-- SHOPBYGOLD FOOTER - Mobile Responsive -->
+    <footer style="background:#0f0f0f; color:#b5b5b5; margin-top:40px;">
+        <style>
+            @media (max-width: 640px) {
+                .sbg-footer-top {
+                    flex-direction: column !important;
+                    padding: 20px 16px !important;
+                }
+
+                .sbg-footer-top h2 {
+                    font-size: 22px !important;
+                }
+
+                .sbg-footer-grid {
+                    grid-template-columns: 1fr 1fr !important;
+                    gap: 24px !important;
+                    padding: 24px 16px !important;
+                }
+
+                .sbg-footer-grid h4 {
+                    font-size: 10px !important;
+                    margin-bottom: 10px !important;
+                }
+
+                .sbg-footer-grid a,
+                .sbg-footer-grid li {
+                    font-size: 12px !important;
+                }
+
+                #footer-email {
+                    padding: 10px !important;
+                    font-size: 12px !important;
+                }
+
+                .sbg-sub-row {
+                    flex-direction: column !important;
+                }
+
+                .sbg-sub-row button {
+                    width: 100% !important;
+                    padding: 12px !important;
+                }
+            }
+        </style>
+
+        <!-- Newsletter -->
         <div style="background:#151515; border-bottom:1px solid #222;">
-            <div class="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-6 justify-between">
+            <div class="sbg-footer-top"
+                style="max-width:1150px; margin:auto; padding:28px 16px; display:flex; justify-content:space-between; gap:20px;">
                 <div>
-                    <h2 class="text-3xl font-black text-white">SHOP<span style="color:#d4af37;">BY</span>GOLD</h2>
-                    <p class="text-sm mt-2 text-gray-400">Best deals, fast delivery</p>
+                    <h2 style="font-size:28px; font-weight:900; color:white; letter-spacing:-1px;">SHOP<span
+                            style="color:#d4af37;">BY</span>GOLD</h2>
+                    <p style="font-size:12px; color:#666; margin-top:4px;">Best deals, fast delivery</p>
                 </div>
-                <div class="flex-1 max-w-xl">
-                    <p class="text-white font-bold text-sm">NEW TO SHOPBYGOLD?</p>
-                    <p class="text-xs text-gray-500 mb-3">Get updates on latest offers & deals</p>
-                    <div class="flex gap-2">
+                <div style="flex:1; max-width:480px; width:100%;">
+                    <p style="color:white; font-weight:700; font-size:13px;">NEW TO SHOPBYGOLD?</p>
+                    <p style="font-size:11px; color:#666; margin-bottom:8px;">Get updates on offers</p>
+                    <div class="sbg-sub-row" style="display:flex; gap:8px;">
                         <input id="footer-email" type="email" placeholder="Enter E-mail Address"
-                            style="flex:1; padding:12px; border-radius:8px; background:white; color:black; outline:none; font-size:13px;">
+                            style="flex:1; padding:11px 12px; border-radius:8px; background:white; color:black; outline:none; font-size:13px; border:none;">
                         <button onclick="subscribeNewsletter()"
-                            style="border:1px solid #d4af37; color:#d4af37; padding:0 22px; border-radius:8px; font-weight:700; font-size:13px;">Subscribe</button>
+                            style="border:1px solid #d4af37; color:#d4af37; padding:0 20px; border-radius:8px; font-weight:700; font-size:12px; white-space:nowrap;">Subscribe</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Links -->
-        <div class="max-w-6xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+        <div class="sbg-footer-grid"
+            style="max-width:1150px; margin:auto; padding:28px 16px; display:grid; grid-template-columns:repeat(4,1fr); gap:32px;">
             <div>
-                <h4 style="color:white; font-weight:800; margin-bottom:16px; font-size:11px; letter-spacing:1px;">NEED
+                <h4 style="color:white; font-weight:800; margin-bottom:14px; font-size:11px; letter-spacing:0.8px;">NEED
                     HELP?</h4>
-                <ul class="space-y-2.5 text-">
-                    <li><a href="#" class="hover:text-white">Chat with us</a></li>
-                    <li><a href="#" class="hover:text-white">Help Center</a></li>
-                    <li><a href="orders.html" class="hover:text-white">My Orders</a></li>
-                    <li><a href="#" class="hover:text-white">How to shop?</a></li>
-                    <li><a href="#" class="hover:text-white">Delivery Timelines</a></li>
-                    <li><a href="#" class="hover:text-white">Return Policy</a></li>
+                <ul
+                    style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; font-size:13px;">
+                    <li><a href="#" style="color:inherit; text-decoration:none;">Chat with us</a></li>
+                    <li><a href="#" style="color:inherit;">Help Center</a></li>
+                    <li><a href="orders.html" style="color:inherit;">My Orders</a></li>
+                    <li><a href="#" style="color:inherit;">Return Policy</a></li>
                 </ul>
             </div>
             <div>
-                <h4 style="color:white; font-weight:800; margin-bottom:16px; font-size:11px;">ABOUT SHOPBYGOLD</h4>
-                <ul class="space-y-2.5 text-">
-                    <li><a href="#" class="hover:text-white">About us</a></li>
-                    <li><a href="#" class="hover:text-white">Terms & Conditions</a></li>
-                    <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
-                    <li><a href="shop.html" class="hover:text-white">Official Stores</a></li>
-                    <li><a href="#" class="hover:text-white">Flash Sales</a></li>
+                <h4 style="color:white; font-weight:800; margin-bottom:14px; font-size:11px;">ABOUT</h4>
+                <ul
+                    style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; font-size:13px;">
+                    <li><a href="#" style="color:inherit;">About us</a></li>
+                    <li><a href="#" style="color:inherit;">Terms</a></li>
+                    <li><a href="#" style="color:inherit;">Privacy</a></li>
+                    <li><a href="shop.html" style="color:inherit;">Official Stores</a></li>
                 </ul>
             </div>
             <div>
-                <h4 style="color:white; font-weight:800; margin-bottom:16px; font-size:11px;">MAKE MONEY</h4>
-                <ul class="space-y-2.5 text-">
-                    <li><a href="#" class="hover:text-white">Sell on ShopByGold</a></li>
-                    <li><a href="#" class="hover:text-white">Vendor hub</a></li>
+                <h4 style="color:white; font-weight:800; margin-bottom:14px; font-size:11px;">MAKE MONEY</h4>
+                <ul
+                    style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; font-size:13px;">
+                    <li><a href="#" style="color:inherit;">Sell on ShopByGold</a></li>
                 </ul>
-                <h4 style="color:white; font-weight:800; margin:24px 0 12px; font-size:11px;">CONTACT US</h4>
-                <ul class="text- space-y-1">
-                    <li>Address: <span style="color:white;">Lagos, Nigeria</span></li>
-                    <li>Phone: <span style="color:white;">07049444886</span></li>
-                    <li>Email: <span style="color:white;">timothyokanlawon99@gmail.com</span></li>
+                <h4 style="color:white; font-weight:800; margin:20px 0 8px; font-size:11px;">CONTACT</h4>
+                <ul style="list-style:none; padding:0; margin:0; font-size:11px; line-height:1.6;">
+                    <li>Lagos, Nigeria</li>
+                    <li>07049444886</li>
                 </ul>
             </div>
             <div>
-                <h4 style="color:white; font-weight:800; margin-bottom:16px; font-size:11px;">PAYMENT</h4>
-                <div class="flex gap-2 mb-6">
-                    <span
-                        style="background:white; color:black; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">Paystack</span>
-                    <span
-                        style="background:white; color:black; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">VISA</span>
-                    <span
-                        style="background:white; color:black; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">Verve</span>
-                </div>
-                <h4 style="color:white; font-weight:800; margin-bottom:12px; font-size:11px;">FOLLOW US</h4>
-                <div class="flex gap-3">
+                <h4 style="color:white; font-weight:800; margin-bottom:14px; font-size:11px;">FOLLOW US</h4>
+                <div style="display:flex; gap:10px;">
                     <a href="#"
-                        style="width:36px; height:36px; background:#1f1f1f; border-radius:50%; display:flex; align-items:center; justify-content:center;">f</a>
+                        style="width:32px; height:32px; background:#1f1f1f; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; text-decoration:none; font-size:12px;">f</a>
                     <a href="#"
-                        style="width:36px; height:36px; background:#1f1f1f; border-radius:50%; display:flex; align-items:center; justify-content:center;">IG</a>
+                        style="width:32px; height:32px; background:#1f1f1f; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; text-decoration:none; font-size:12px;">IG</a>
                     <a href="#"
-                        style="width:36px; height:36px; background:#1f1f1f; border-radius:50%; display:flex; align-items:center; justify-content:center;">𝕏</a>
+                        style="width:32px; height:32px; background:#1f1f1f; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; text-decoration:none; font-size:12px;">X</a>
                 </div>
             </div>
         </div>
 
-        <div style="border-top:1px solid #1f1f1f; text-align:center; padding:18px;">
-            <p style="font-size:11px; color:#666;">© 2026 ShopByGold • Built with Gold • <span
-                    style="color:#d4af37;">PAY SECURE</span> • <span style="color:#d4af37;">FAST DELIVERY</span></p>
+        <div style="border-top:1px solid #1f1f1f; text-align:center; padding:14px 16px;">
+            <p style="font-size:10px; color:#555;">© 2026 ShopByGold • <span style="color:#d4af37;">PAY SECURE</span> •
+                FAST DELIVERY</p>
         </div>
 
-        <script>
-            async function subscribeNewsletter() {
-                const input = document.getElementById('footer-email');
-                const email = input ? input.value.trim() : '';
-                if (!email || !email.includes('@')) {
-                    alert('❌ Please enter valid email');
-                    return;
-                }
-                try {
-                    const btn = document.querySelector('footer button');
-                    if (btn) btn.textContent = '...';
-
-                    const res = await fetch('/api/newsletter/subscribe', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: email })
-                    });
-                    const data = await res.json();
-                    alert('✅ ' + data.msg);
-                    if (res.ok) input.value = '';
-                } catch (err) {
-                    console.error(err);
-                    alert('❌ Network error, try again');
-                }
+    <script>
+        async function subscribeNewsletter() {
+            const input = document.getElementById('footer-email');
+            const email = input ? input.value.trim() : '';
+            if (!email || !email.includes('@')) {
+                alert('❌ Please enter valid email');
+                return;
             }
-        </script>
+            try {
+                const btn = document.querySelector('footer button');
+                if (btn) btn.textContent = '...';
+
+                const res = await fetch('/api/newsletter/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                const data = await res.json();
+                alert('✅ ' + data.msg);
+                if (res.ok) input.value = '';
+            } catch (err) {
+                console.error(err);
+                alert('❌ Network error, try again');
+            }
+        }
+    </script>
     </footer>
     
     <!-- BOTTOM NAV -->
