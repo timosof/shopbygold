@@ -239,6 +239,120 @@
 })();
 </script>
 
+    <!-- SHOPBYGOLD FOOTER - Dark Distinct -->
+    <footer class="mt-20" style="background:#0f0f0f; color:#b5b5b5;">
+        <!-- Top Newsletter - Gold Accent -->
+        <div style="background:#151515; border-bottom:1px solid #222;">
+            <div class="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-6 justify-between">
+                <div>
+                    <h2 class="text-3xl font-black text-white">SHOP<span style="color:#d4af37;">BY</span>GOLD</h2>
+                    <p class="text-sm mt-2 text-gray-400">Best deals, fast delivery</p>
+                </div>
+                <div class="flex-1 max-w-xl">
+                    <p class="text-white font-bold text-sm">NEW TO SHOPBYGOLD?</p>
+                    <p class="text-xs text-gray-500 mb-3">Get updates on latest offers & deals</p>
+                    <div class="flex gap-2">
+                        <input id="footer-email" type="email" placeholder="Enter E-mail Address"
+                            style="flex:1; padding:12px; border-radius:8px; background:white; color:black; outline:none; font-size:13px;">
+                        <button onclick="subscribeNewsletter()"
+                            style="border:1px solid #d4af37; color:#d4af37; padding:0 22px; border-radius:8px; font-weight:700; font-size:13px;">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Links -->
+        <div class="max-w-6xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+            <div>
+                <h4 style="color:white; font-weight:800; margin-bottom:16px; font-size:11px; letter-spacing:1px;">NEED
+                    HELP?</h4>
+                <ul class="space-y-2.5 text-">
+                    <li><a href="#" class="hover:text-white">Chat with us</a></li>
+                    <li><a href="#" class="hover:text-white">Help Center</a></li>
+                    <li><a href="orders.html" class="hover:text-white">My Orders</a></li>
+                    <li><a href="#" class="hover:text-white">How to shop?</a></li>
+                    <li><a href="#" class="hover:text-white">Delivery Timelines</a></li>
+                    <li><a href="#" class="hover:text-white">Return Policy</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="color:white; font-weight:800; margin-bottom:16px; font-size:11px;">ABOUT SHOPBYGOLD</h4>
+                <ul class="space-y-2.5 text-">
+                    <li><a href="#" class="hover:text-white">About us</a></li>
+                    <li><a href="#" class="hover:text-white">Terms & Conditions</a></li>
+                    <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                    <li><a href="shop.html" class="hover:text-white">Official Stores</a></li>
+                    <li><a href="#" class="hover:text-white">Flash Sales</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="color:white; font-weight:800; margin-bottom:16px; font-size:11px;">MAKE MONEY</h4>
+                <ul class="space-y-2.5 text-">
+                    <li><a href="#" class="hover:text-white">Sell on ShopByGold</a></li>
+                    <li><a href="#" class="hover:text-white">Vendor hub</a></li>
+                </ul>
+                <h4 style="color:white; font-weight:800; margin:24px 0 12px; font-size:11px;">CONTACT US</h4>
+                <ul class="text- space-y-1">
+                    <li>Address: <span style="color:white;">Lagos, Nigeria</span></li>
+                    <li>Phone: <span style="color:white;">07049444886</span></li>
+                    <li>Email: <span style="color:white;">timothyokanlawon99@gmail.com</span></li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="color:white; font-weight:800; margin-bottom:16px; font-size:11px;">PAYMENT</h4>
+                <div class="flex gap-2 mb-6">
+                    <span
+                        style="background:white; color:black; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">Paystack</span>
+                    <span
+                        style="background:white; color:black; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">VISA</span>
+                    <span
+                        style="background:white; color:black; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:800;">Verve</span>
+                </div>
+                <h4 style="color:white; font-weight:800; margin-bottom:12px; font-size:11px;">FOLLOW US</h4>
+                <div class="flex gap-3">
+                    <a href="#"
+                        style="width:36px; height:36px; background:#1f1f1f; border-radius:50%; display:flex; align-items:center; justify-content:center;">f</a>
+                    <a href="#"
+                        style="width:36px; height:36px; background:#1f1f1f; border-radius:50%; display:flex; align-items:center; justify-content:center;">IG</a>
+                    <a href="#"
+                        style="width:36px; height:36px; background:#1f1f1f; border-radius:50%; display:flex; align-items:center; justify-content:center;">𝕏</a>
+                </div>
+            </div>
+        </div>
+
+        <div style="border-top:1px solid #1f1f1f; text-align:center; padding:18px;">
+            <p style="font-size:11px; color:#666;">© 2026 ShopByGold • Built with Gold • <span
+                    style="color:#d4af37;">PAY SECURE</span> • <span style="color:#d4af37;">FAST DELIVERY</span></p>
+        </div>
+
+        <script>
+            async function subscribeNewsletter() {
+                const input = document.getElementById('footer-email');
+                const email = input ? input.value.trim() : '';
+                if (!email || !email.includes('@')) {
+                    alert('❌ Please enter valid email');
+                    return;
+                }
+                try {
+                    const btn = document.querySelector('footer button');
+                    if (btn) btn.textContent = '...';
+
+                    const res = await fetch('/api/newsletter/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    const data = await res.json();
+                    alert('✅ ' + data.msg);
+                    if (res.ok) input.value = '';
+                } catch (err) {
+                    console.error(err);
+                    alert('❌ Network error, try again');
+                }
+            }
+        </script>
+    </footer>
+    
 <!-- BOTTOM NAV -->
 <div id="bottom-nav">
     <a href="shop.html"><span class="icon">🏠</span><span>Home</span></a>
