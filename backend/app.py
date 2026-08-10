@@ -77,7 +77,8 @@ app.bcrypt = bcrypt
 app.mail = mail
 
 # Import db AFTER config is loaded
-from models import db, User, Product, Order, OrderItem, Review, PasswordResetToken, Setting, Slider
+from models import Newsletter, db, User, Product, Order, OrderItem, Review, PasswordResetToken, Setting, Slider
+
 
 db.init_app(app)
 migrate = Migrate(app, db)
