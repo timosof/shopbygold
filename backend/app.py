@@ -1,6 +1,5 @@
 import os
 from datetime import timedelta, datetime
-from models import Newsletter
 from dotenv import load_dotenv
 from flask import Flask, jsonify, send_from_directory, request
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
