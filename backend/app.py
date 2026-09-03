@@ -375,24 +375,24 @@ def delete_newsletter():
         db.session.commit()
     return jsonify({"msg":"Deleted"})
 
-@app.route('/api/newsletter/list', methods=['GET'])
-def list_newsletter():
-    try:
-        subs = Newsletter.query.order_by(Newsletter.created_at.desc()).all()
-        result = []
-        for s in subs:
-            result.append({
-                "email": s.email,
-                "created_at": s.created_at.isoformat() if hasattr(s, 'created_at') and s.created_at else "N/A",
-                "date": str(s.created_at) if hasattr(s, 'created_at') else "N/A"
-            })
-        print(f"Returning {len(result)} subscribers")
-        return jsonify(result), 200
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        print("LIST ERROR:", e)
-        return jsonify({"msg": f"Error: {str(e)}"}), 500
+# @app.route('/api/newsletter/list', methods=['GET'])
+# def list_newsletter():
+#     try:
+#         subs = Newsletter.query.order_by(Newsletter.created_at.desc()).all()
+#         result = []
+#         for s in subs:
+#             result.append({
+#                 "email": s.email,
+#                 "created_at": s.created_at.isoformat() if hasattr(s, 'created_at') and s.created_at else "N/A",
+#                 "date": str(s.created_at) if hasattr(s, 'created_at') else "N/A"
+#             })
+#         print(f"Returning {len(result)} subscribers")
+#         return jsonify(result), 200
+#     except Exception as e:
+#         import traceback
+#         traceback.print_exc()
+#         print("LIST ERROR:", e)
+#         return jsonify({"msg": f"Error: {str(e)}"}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
