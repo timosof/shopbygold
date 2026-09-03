@@ -179,13 +179,16 @@ def handle_ai_chat():
         If cart has items, mention them naturally."""
 
         completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile", # FIXED - old model retired
+            model="openai/gpt-oss-20b", # NEW - fast + cheap for ecommerce chat, replaces llama-3.3-70b
+            # you can also use "openai/gpt-oss-120b" if you want smarter, or "groq/compound-mini" if you want web search
             messages=[{"role": "user", "content": prompt}],
             max_tokens=200
         )
         reply = completion.choices[0].message.content
         print(f"Groq AI replied: {reply}")
         return jsonify({"reply": reply, "cart_count": len(real_cart)})
+
+    
 
     except Exception as e:
         print(f"AI Groq error: {e}") # This will show in Render logs
