@@ -851,6 +851,35 @@
         <a href="profile.html"><span class="icon" id="btm-profile-icon">👤</span><span
                 id="btm-profile-text">Account</span></a>
     </div>
+<!-- firebase -->
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDpS6VQdXbgEhNyCpyvM7tnFezSIcTnpYs",
+    authDomain: "shopbygold-b32af.firebaseapp.com",
+    projectId: "shopbygold-b32af",
+    storageBucket: "shopbygold-b32af.firebasestorage.app",
+    messagingSenderId: "749710700838",
+    appId: "1:749710700838:web:49051875f7891ef99611e7"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
+
+  async function requestPermission() {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const token = await getToken(messaging, {
+        vapidKey: "BJGEVbcF6ZK7sW5eqdIQlYJBSlL8HnHyuQgZY_JLsS9XqKmlLiCdTLTmNQcyhQGNDn3uY0_bRcKVK309q347PdI"
+      });
+      console.log("FCM Token:", token);
+      // We will send this token to Flask in Step 3
+    }
+  }
+  requestPermission();
+</script>
 </body>
 
 </html>
