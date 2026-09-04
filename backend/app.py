@@ -9,7 +9,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from flask_migrate import Migrate
-FIREBASE_API_KEY = os.getenv("FIREBASE_API_KEY")
+
 
 import cloudinary
 import cloudinary.uploader
@@ -78,7 +78,7 @@ app.bcrypt = bcrypt
 app.mail = mail
 
 # Import db AFTER config is loaded
-from models import Newsletter, db, User, Product, Order, OrderItem, Review, PasswordResetToken, Setting, Slider
+from models import Newsletter, db, User, Product, Order, OrderItem, Review, PasswordResetToken, Setting, Slider, FCMToken
 
 
 db.init_app(app)
