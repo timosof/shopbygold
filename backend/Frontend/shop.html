@@ -874,6 +874,13 @@
   }
 
   requestPermission();
+
+// After console.log("✅ FCM Token:", token);
+await fetch('/api/save-fcm-token', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ token: token })
+});
 </script>
     
     <!-- BOTTOM NAV - MOBILE ONLY -->
