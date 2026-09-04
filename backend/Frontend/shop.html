@@ -841,18 +841,9 @@
         }
     </script>
     </footer>
-    
-    <!-- BOTTOM NAV - MOBILE ONLY -->
-    <div id="bottom-nav">
-        <a href="shop.html"><span class="icon">🏠</span><span>Home</span></a>
-        <a href="shop.html"><span class="icon">🔍</span><span>Shop</span></a>
-        <a href="cart.html" style="position:relative"><span class="icon">🛒</span><span>Cart</span><span
-                id="btm-cart-count" class="cart-badge" style="display:none">0</span></a>
-        <a href="profile.html"><span class="icon" id="btm-profile-icon">👤</span><span
-                id="btm-profile-text">Account</span></a>
-    </div>
-<!-- firebase -->
- <script type="module">
+
+    <!-- firebase -->
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
   import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging.js";
 
@@ -869,27 +860,46 @@
   const messaging = getMessaging(app);
 
   async function requestPermission() {
-    console.log("Requesting notification permission... Status:", Notification.permission);
+    console.log("Checking Service Worker...");
     try {
+      // 1. Manually register SW
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      console.log("SW registered:", registration.scope);
+      await navigator.serviceWorker.ready;
+      console.log("SW ready");
+
       const permission = await Notification.requestPermission();
-      console.log("Permission result:", permission);
+      console.log("Permission:", permission);
+
       if (permission === 'granted') {
-        console.log("Getting FCM token...");
         const token = await getToken(messaging, {
-          vapidKey: "BJGEVbcF6ZK7sW5eqdIQlYJBSlL8HnHyuQgZY_JLsS9XqKmlLiCdTLTmNQcyhQGNDn3uY0_bRcKVK309q347PdI"
+          vapidKey: "BJGEVbcF6ZK7sW5eqdIQlYJBSlL8HnHyuQgZY_JLsS9XqKmlLiCdTLTmNQcyhQGNDn3uY0_bRcKVK309q347PdI",
+          serviceWorkerRegistration: registration
         });
         console.log("✅ FCM Token:", token);
-        alert("FCM Token copied to console:\n" + token);
-      } else {
-        console.log("Permission not granted");
+        alert("SUCCESS! Token:\n" + token);
       }
     } catch (err) {
       console.error("❌ FCM Error:", err);
     }
   }
-  requestPermission();
+  
+  if ('serviceWorker' in navigator) {
+    requestPermission();
+  } else {
+    console.error("Service Worker not supported");
+  }
 </script>
-</script>
+    
+    <!-- BOTTOM NAV - MOBILE ONLY -->
+    <div id="bottom-nav">
+        <a href="shop.html"><span class="icon">🏠</span><span>Home</span></a>
+        <a href="shop.html"><span class="icon">🔍</span><span>Shop</span></a>
+        <a href="cart.html" style="position:relative"><span class="icon">🛒</span><span>Cart</span><span
+                id="btm-cart-count" class="cart-badge" style="display:none">0</span></a>
+        <a href="profile.html"><span class="icon" id="btm-profile-icon">👤</span><span
+                id="btm-profile-text">Account</span></a>
+    </div>
 </body>
 
 </html>
