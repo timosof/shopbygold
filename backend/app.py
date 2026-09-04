@@ -289,18 +289,6 @@ def fix_sequence():
         return {"error": str(e)}, 500
         
 
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def serve_frontend(path):
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
-        return send_from_directory(app.static_folder, path)
-    else:
-        # Try shop.html first, then index.html
-        if os.path.exists(os.path.join(app.static_folder, "shop.html")):
-            return send_from_directory(app.static_folder, "shop.html")
-        return send_from_directory(app.static_folder, "index.html")
-
-
 with app.app_context():
     db.create_all()
     # AUTO FIX Postgres sequence bug for order_items
@@ -465,9 +453,8 @@ def save_fcm_token():
             return jsonify({"error": "No token"}), 400
         existing = FCMToken.query.filter_by(token=token).first()
         if existing:
-            existing.updated_at = datetime.utcnow()
-            db.session.commit()
-            return jsonify({"status": "updated"})
+            print(f"Token exists: {token[:20]}...")
+            return jsonify({"status": "exists"})
         db.session.add(FCMToken(token=token))
         db.session.commit()
         print(f"✅ Token saved: {token[:20]}...")
