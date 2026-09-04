@@ -852,7 +852,7 @@
                 id="btm-profile-text">Account</span></a>
     </div>
 <!-- firebase -->
-    <script type="module">
+ <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
   import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging.js";
 
@@ -869,16 +869,26 @@
   const messaging = getMessaging(app);
 
   async function requestPermission() {
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      const token = await getToken(messaging, {
-        vapidKey: "BJGEVbcF6ZK7sW5eqdIQlYJBSlL8HnHyuQgZY_JLsS9XqKmlLiCdTLTmNQcyhQGNDn3uY0_bRcKVK309q347PdI"
-      });
-      console.log("FCM Token:", token);
-      // We will send this token to Flask in Step 3
+    console.log("Requesting notification permission... Status:", Notification.permission);
+    try {
+      const permission = await Notification.requestPermission();
+      console.log("Permission result:", permission);
+      if (permission === 'granted') {
+        console.log("Getting FCM token...");
+        const token = await getToken(messaging, {
+          vapidKey: "BJGEVbcF6ZK7sW5eqdIQlYJBSlL8HnHyuQgZY_JLsS9XqKmlLiCdTLTmNQcyhQGNDn3uY0_bRcKVK309q347PdI"
+        });
+        console.log("✅ FCM Token:", token);
+        alert("FCM Token copied to console:\n" + token);
+      } else {
+        console.log("Permission not granted");
+      }
+    } catch (err) {
+      console.error("❌ FCM Error:", err);
     }
   }
   requestPermission();
+</script>
 </script>
 </body>
 
