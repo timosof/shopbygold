@@ -845,24 +845,34 @@
     <!-- firebase -->
 <script src="/firebase-config.js"></script>
 <script type="module">
-  import {{ initializeApp }} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-  import {{ getMessaging, getToken }} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging.js";
 
   const app = initializeApp(FIREBASE_CONFIG);
   const messaging = getMessaging(app);
 
-  async function requestPermission() {{
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    await navigator.serviceWorker.ready;
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {{
-      const token = await getToken(messaging, {{
-        vapidKey: FIREBASE_CONFIG.vapidKey,
-        serviceWorkerRegistration: registration
-      }});
-      console.log("✅ FCM Token:", token);
-    }}
-  }}
+  async function requestPermission() {
+    try {
+      console.log("Checking Service Worker...");
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      await navigator.serviceWorker.ready;
+      console.log("SW ready");
+
+      const permission = await Notification.requestPermission();
+      console.log("Permission:", permission);
+
+      if (permission === 'granted') {
+        const token = await getToken(messaging, {
+          vapidKey: FIREBASE_CONFIG.vapidKey,
+          serviceWorkerRegistration: registration
+        });
+        console.log("✅ FCM Token:", token);
+      }
+    } catch (err) {
+      console.error("❌ FCM Error:", err);
+    }
+  }
+
   requestPermission();
 </script>
     
