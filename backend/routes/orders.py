@@ -341,47 +341,60 @@ def get_all_orders():
 @orders_bp.route('/<int:order_id>/status', methods=['PUT'])
 @jwt_required()
 def update_order_status(order_id):
-    admin_user_id = get_jwt_identity()
-    admin_user = User.query.get(admin_user_id)
-    if not admin_user or admin_user.role != 'admin':
-        return jsonify({'msg': 'Admin access required'}), 403
-
-    order = Order.query.get(order_id)
-    if not order:
-        return jsonify({'msg': 'Order not found'}), 404
-
-    data = request.get_json()
-    new_status = data.get('status')
-    if new_status not in ['pending', 'paid', 'shipped', 'delivered', 'cancelled']:
-        return jsonify({'msg': 'Invalid status'}), 400
-
-    old_status = order.status
-    order.status = new_status
-    db.session.commit()
-
-    # Get customer BEFORE try, so it always exists
-    customer = User.query.get(order.user_id)
-
-    # Email - your code
+    import threading
     try:
-        send_order_confirmation(current_app._get_current_object(), order, customer.email)
+        admin_user_id = get_jwt_identity()
+        admin_user = User.query.get(admin_user_id)
+        if not admin_user or admin_user.role != 'admin':
+            return jsonify({'msg': 'Admin access required'}), 403
+
+        order = Order.query.get(order_id)
+        if not order:
+            return jsonify({'msg': 'Order not found'}), 404
+
+        data = request.get_json()
+        new_status = data.get('status')
+        if new_status not in ['pending', 'paid', 'shipped', 'delivered', 'cancelled']:
+            return jsonify({'msg': 'Invalid status'}), 400
+
+        order.status = new_status
+        db.session.commit()
+
+        customer = User.query.get(order.user_id) if order.user_id else None
+
+        # EMAIL IN BACKGROUND THREAD - won't timeout anymore
+        def send_email_bg(app, order_id, email):
+            try:
+                with app.app_context():
+                    order_obj = Order.query.get(order_id)
+                    if order_obj and email:
+                        send_order_confirmation(app, order_obj, email)
+                        print(f"✅ Email sent for order {order_id} to {email}")
+            except Exception as e:
+                print(f"BG Email failed: {e}")
+
+        if customer and customer.email:
+            threading.Thread(
+                target=send_email_bg,
+                args=(current_app._get_current_object(), order.id, customer.email),
+                daemon=True
+            ).start()
+        else:
+            print(f"No email for order {order.id}")
+
+        # PUSH - fast, won't timeout
+        if customer:
+            try:
+                from utils.fcm import send_push_to_user
+                send_push_to_user(order.user_id, f"Order #{order.id} {new_status.upper()}", f"Your order is now {new_status}", "/orders.html")
+            except Exception as e:
+                print(f"Push skipped: {e}")
+
+        # Return instantly
+        return jsonify({'msg': 'Status updated', 'order': order.to_dict()}), 200
+
     except Exception as e:
-        print(f"Email failed: {e}")
-
-    if old_status != 'delivered' and new_status == 'delivered':
-        print(f"Order #{order.id} delivered to {customer.email}")
-
-    # Push - OUTSIDE the if, so it works for paid/shipped/delivered
-    # try:
-    #     from utils.fcm import send_push_to_user
-    #     send_push_to_user(
-    #         user_id=order.user_id,
-    #         title=f"Order #{order.id} {new_status.upper()}",
-    #         body=f"Your order is now {new_status}",
-    #         link="/orders.html"
-    #     )
-    # except Exception as e:
-    #     print(f"Push skipped: {e}")
-
-    return jsonify({'msg': 'Status updated', 'order': order.to_dict()}), 200
-
+        db.session.rollback()
+        import traceback
+        print(traceback.format_exc())
+        return jsonify({'msg': f'Update failed: {str(e)}'}), 500
