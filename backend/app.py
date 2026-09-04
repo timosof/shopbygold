@@ -487,6 +487,25 @@ def admin_send_push():
         return jsonify({"msg": f"Push sent to {count} devices", "count": count})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# to load from directory
+from flask import send_from_directory
+
+@app.route('/firebase-messaging-sw.js')
+def sw():
+    return send_from_directory('frontend', 'firebase-messaging-sw.js', mimetype='application/javascript')
+
+@app.route('/firebase-init.js')
+def firebase_init_js():
+    return send_from_directory('frontend', 'firebase-init.js', mimetype='application/javascript')
+
+# This should already be your catch-all for frontend
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    if path != "" and os.path.exists(os.path.join('frontend', path)):
+        return send_from_directory('frontend', path)
+    return send_from_directory('frontend', 'index.html')
         
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
