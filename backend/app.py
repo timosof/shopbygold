@@ -413,6 +413,8 @@ firebase.initializeApp({{
 const messaging = firebase.messaging();
 """
     return sw_code, 200, {'Content-Type': 'application/javascript'}
+
+    
 # @app.route('/api/newsletter/list', methods=['GET'])
 # def list_newsletter():
 #     try:
@@ -432,6 +434,14 @@ const messaging = firebase.messaging();
 #         print("LIST ERROR:", e)
 #         return jsonify({"msg": f"Error: {str(e)}"}), 500
 
+@app.route('/api/save-fcm-token', methods=['POST'])
+def save_fcm_token():
+    data = request.get_json()
+    token = data.get('token')
+    print(f"New FCM Token: {token}")
+    # TODO: Save token to your DB here
+    return jsonify({"status": "saved"})
+    
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
