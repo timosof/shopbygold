@@ -84,6 +84,14 @@ from models import Newsletter, db, User, Product, Order, OrderItem, Review, Pass
 db.init_app(app)
 migrate = Migrate(app, db)
 
+# Auto-create fcm_tokens table on startup (free tier - no shell needed)
+with app.app_context():
+    try:
+        db.create_all()
+        print("✅ DB tables checked/created - fcm_tokens ready")
+    except Exception as e:
+        print(f"⚠️ DB create check failed: {e}")
+        
 # Import blueprints
 from routes.auth import auth_bp
 from routes.products import products_bp
