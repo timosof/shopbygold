@@ -381,14 +381,9 @@ def delete_newsletter():
     return jsonify({"msg":"Deleted"})
 
 # push notivation route
-@app.route('/firebase-messaging-sw.js')
-def firebase_sw():
-    return send_from_directory('.', 'firebase-messaging-sw.js', mimetype='application/javascript')
-
-# push notivation route 2
 @app.route('/firebase-config.js')
 def firebase_config_js():
-    key = os.getenv("FIREBASE_API_KEY")
+    key = os.getenv("FIREBASE_API_KEY", "")
     return f"""
 const FIREBASE_CONFIG = {{
   apiKey: "{key}",
@@ -402,8 +397,8 @@ const FIREBASE_CONFIG = {{
 """, 200, {'Content-Type': 'application/javascript'}
 
 @app.route('/firebase-messaging-sw.js')
-def firebase_sw():
-    key = os.getenv("FIREBASE_API_KEY")
+def firebase_sw_dynamic():
+    key = os.getenv("FIREBASE_API_KEY", "")
     sw_code = f"""
 importScripts('https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging-compat.js');
