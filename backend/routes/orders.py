@@ -207,13 +207,15 @@ def verify_paystack(reference):
             except Exception as e:
                 print(f"BG Email failed: {e}")
 
+        # ... keep everything same until this part ...
+
         threading.Thread(
             target=send_email_bg, 
             args=(current_app._get_current_object(), order.id, user_id),
             daemon=True
         ).start()
 
-                # PUSH - New paid order
+        # PUSH - New paid order (FIXED INDENTATION)
         try:
             from utils.fcm import send_push_to_all
             send_push_to_all(
@@ -292,6 +294,7 @@ def create_order():
             print(f"Email failed: {e}")
 
                 # PUSH - New COD order
+        # PUSH - New COD order (FIXED INDENTATION)
         try:
             from utils.fcm import send_push_to_all
             send_push_to_all(
@@ -359,6 +362,7 @@ def update_order_status(order_id):
     db.session.commit()
 
     # Send email to CUSTOMER
+        # Send email to CUSTOMER
     try:
         customer = User.query.get(order.user_id)
         send_order_confirmation(current_app._get_current_object(), order, customer.email)
@@ -368,8 +372,9 @@ def update_order_status(order_id):
     if old_status != 'delivered' and order.status == 'delivered':
         print(f"EMAIL TO {customer.email}: Order #{order.id} delivered!")
 
-        # PUSH - Notify customer about status
+    # PUSH - Outside the IF, so it works for ALL status (FIXED)
     try:
+        print(f"Trying to send push to user {order.user_id}")
         from utils.fcm import send_push_to_user
         send_push_to_user(
             user_id=order.user_id,
@@ -378,9 +383,9 @@ def update_order_status(order_id):
             link="/orders.html"
         )
     except Exception as e:
-        print(f"Push error: {e}")
-        
+        import traceback
+        print(f"PUSH ERROR (ignoring): {e}")
+        traceback.print_exc()
 
     return jsonify({'msg': 'Status updated', 'order': order.to_dict()}), 200
-
 
