@@ -212,7 +212,18 @@ def verify_paystack(reference):
             args=(current_app._get_current_object(), order.id, user_id),
             daemon=True
         ).start()
-        
+
+                # PUSH - New paid order
+        try:
+            from utils.fcm import send_push_to_all
+            send_push_to_all(
+                title="🛒 New Paid Order!",
+                body=f"Order #{order.id} - ₦{total_amount}",
+                link="/admin.html"
+            )
+        except Exception as e:
+            print(f"Push error: {e}")
+            
         # Return instantly - don't wait for email
         try:
             return jsonify(order.to_dict()), 200
@@ -279,7 +290,18 @@ def create_order():
             send_order_confirmation(current_app._get_current_object(), order, customer.email)
         except Exception as e:
             print(f"Email failed: {e}")
-        
+
+                # PUSH - New COD order
+        try:
+            from utils.fcm import send_push_to_all
+            send_push_to_all(
+                title="📦 New COD Order!",
+                body=f"Order #{order.id} - {data['customer_name']}",
+                link="/admin.html"
+            )
+        except Exception as e:
+            print(f"Push error: {e}")
+            
         return jsonify({
             'msg': 'Order created',
             'order_id': order.id,
@@ -346,4 +368,19 @@ def update_order_status(order_id):
     if old_status != 'delivered' and order.status == 'delivered':
         print(f"EMAIL TO {customer.email}: Order #{order.id} delivered!")
 
+        # PUSH - Notify customer about status
+    try:
+        from utils.fcm import send_push_to_user
+        send_push_to_user(
+            user_id=order.user_id,
+            title=f"Order #{order.id} {new_status}",
+            body=f"Your order is now {new_status}",
+            link="/orders.html"
+        )
+    except Exception as e:
+        print(f"Push error: {e}")
+        
+
     return jsonify({'msg': 'Status updated', 'order': order.to_dict()}), 200
+
+
