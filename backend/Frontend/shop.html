@@ -862,12 +862,21 @@
       console.log("Permission:", permission);
 
       if (permission === 'granted') {
-        const token = await getToken(messaging, {
-          vapidKey: FIREBASE_CONFIG.vapidKey,
-          serviceWorkerRegistration: registration
-        });
-        console.log("✅ FCM Token:", token);
-      }
+  const token = await getToken(messaging, {
+    vapidKey: FIREBASE_CONFIG.vapidKey,
+    serviceWorkerRegistration: registration
+  });
+  console.log("✅ FCM Token:", token);
+
+  // Save to backend
+  const res = await fetch('/api/save-fcm-token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: token })
+  });
+  const result = await res.json();
+  console.log("DB Save result:", result);
+}
     } catch (err) {
       console.error("❌ FCM Error:", err);
     }
