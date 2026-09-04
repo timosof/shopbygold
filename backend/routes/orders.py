@@ -343,7 +343,6 @@ def get_all_orders():
 def update_order_status(order_id):
     admin_user_id = get_jwt_identity()
     admin_user = User.query.get(admin_user_id)
-
     if not admin_user or admin_user.role != 'admin':
         return jsonify({'msg': 'Admin access required'}), 403
 
@@ -353,7 +352,6 @@ def update_order_status(order_id):
 
     data = request.get_json()
     new_status = data.get('status')
-
     if new_status not in ['pending', 'paid', 'shipped', 'delivered', 'cancelled']:
         return jsonify({'msg': 'Invalid status'}), 400
 
@@ -361,31 +359,29 @@ def update_order_status(order_id):
     order.status = new_status
     db.session.commit()
 
-    # Send email to CUSTOMER
-        # Send email to CUSTOMER
+    # Get customer BEFORE try, so it always exists
+    customer = User.query.get(order.user_id)
+
+    # Email - your code
     try:
-        customer = User.query.get(order.user_id)
         send_order_confirmation(current_app._get_current_object(), order, customer.email)
     except Exception as e:
         print(f"Email failed: {e}")
 
-    if old_status != 'delivered' and order.status == 'delivered':
-        print(f"EMAIL TO {customer.email}: Order #{order.id} delivered!")
+    if old_status != 'delivered' and new_status == 'delivered':
+        print(f"Order #{order.id} delivered to {customer.email}")
 
-    # PUSH - Outside the IF, so it works for ALL status (FIXED)
+    # Push - OUTSIDE the if, so it works for paid/shipped/delivered
     try:
-        print(f"Trying to send push to user {order.user_id}")
         from utils.fcm import send_push_to_user
         send_push_to_user(
             user_id=order.user_id,
-            title=f"Order #{order.id} {new_status}",
+            title=f"Order #{order.id} {new_status.upper()}",
             body=f"Your order is now {new_status}",
             link="/orders.html"
         )
     except Exception as e:
-        import traceback
-        print(f"PUSH ERROR (ignoring): {e}")
-        traceback.print_exc()
+        print(f"Push skipped: {e}")
 
     return jsonify({'msg': 'Status updated', 'order': order.to_dict()}), 200
 
