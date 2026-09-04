@@ -389,6 +389,7 @@ def delete_newsletter():
     return jsonify({"msg":"Deleted"})
 
 # push notivation route
+# === FIREBASE PUSH - ONE VERSION ONLY ===
 @app.route('/firebase-config.js')
 def firebase_config_js():
     key = os.getenv("FIREBASE_API_KEY", "")
@@ -405,7 +406,7 @@ const FIREBASE_CONFIG = {{
 """, 200, {'Content-Type': 'application/javascript'}
 
 @app.route('/firebase-messaging-sw.js')
-def firebase_sw_dynamic():
+def firebase_sw():
     key = os.getenv("FIREBASE_API_KEY", "")
     sw_code = f"""
 importScripts('https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js');
@@ -419,58 +420,61 @@ firebase.initializeApp({{
   appId: "1:749710700838:web:49051875f7891ef99611e7"
 }});
 const messaging = firebase.messaging();
+messaging.onBackgroundMessage(function(payload) {{
+  console.log('[SW] Background push', payload);
+  self.registration.showNotification(payload.notification.title, {{
+    body: payload.notification.body,
+    icon: '/logo.png'
+  }});
+}});
 """
     return sw_code, 200, {'Content-Type': 'application/javascript'}
 
-    
-# @app.route('/api/newsletter/list', methods=['GET'])
-# def list_newsletter():
-#     try:
-#         subs = Newsletter.query.order_by(Newsletter.created_at.desc()).all()
-#         result = []
-#         for s in subs:
-#             result.append({
-#                 "email": s.email,
-#                 "created_at": s.created_at.isoformat() if hasattr(s, 'created_at') and s.created_at else "N/A",
-#                 "date": str(s.created_at) if hasattr(s, 'created_at') else "N/A"
-#             })
-#         print(f"Returning {len(result)} subscribers")
-#         return jsonify(result), 200
-#     except Exception as e:
-#         import traceback
-#         traceback.print_exc()
-#         print("LIST ERROR:", e)
-#         return jsonify({"msg": f"Error: {str(e)}"}), 500
-
-from flask import request, jsonify
+@app.route('/firebase-init.js')
+def firebase_init_js():
+    # Serve your frontend/firebase-init.js if exists, else fallback
+    if os.path.exists(os.path.join(FRONTEND_DIR, 'firebase-init.js')):
+        return send_from_directory(FRONTEND_DIR, 'firebase-init.js')
+    # Fallback inline
+    return """
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging.js";
+const app = initializeApp(FIREBASE_CONFIG);
+const messaging = getMessaging(app);
+Notification.requestPermission().then(p=>{
+  if(p==='granted'){
+    getToken(messaging, {vapidKey: FIREBASE_CONFIG.vapidKey}).then(token=>{
+      if(token){
+        localStorage.setItem('fcm_token', token);
+        fetch('/api/save-fcm-token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});
+      }
+    });
+  }
+});
+onMessage(messaging, (payload)=>{
+  new Notification(payload.notification.title, {body: payload.notification.body});
+});
+""", 200, {'Content-Type': 'application/javascript'}
 
 @app.route('/api/save-fcm-token', methods=['POST'])
 def save_fcm_token():
     try:
         data = request.get_json()
         token = data.get('token')
-        
         if not token:
-            return jsonify({"error": "No token provided"}), 400
-
-        # Check if token already exists
+            return jsonify({"error": "No token"}), 400
         existing = FCMToken.query.filter_by(token=token).first()
         if existing:
             existing.updated_at = datetime.utcnow()
             db.session.commit()
-            print(f"Token updated: {token[:20]}...")
             return jsonify({"status": "updated"})
-
-        # Save new token
-        new_token = FCMToken(token=token)
-        db.session.add(new_token)
+        db.session.add(FCMToken(token=token))
         db.session.commit()
-        print(f"✅ New Token saved to DB: {token[:20]}...")
+        print(f"✅ Token saved: {token[:20]}...")
         return jsonify({"status": "saved"})
-        
     except Exception as e:
-        print(f"Error saving token: {e}")
         db.session.rollback()
+        print(f"Token save error: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/admin/send-push', methods=['POST'])
@@ -480,33 +484,24 @@ def admin_send_push():
         title = data.get('title', 'ShopByGold')
         body = data.get('body', '')
         link = data.get('link', '/shop.html')
-        if not body:
-            return jsonify({"error": "Body required"}), 400
         from utils.fcm import send_push_to_all
         count = send_push_to_all(title, body, link)
         return jsonify({"msg": f"Push sent to {count} devices", "count": count})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# to load from directory
-from flask import send_from_directory
-
-@app.route('/firebase-messaging-sw.js')
-def sw():
-    return send_from_directory('frontend', 'firebase-messaging-sw.js', mimetype='application/javascript')
-
-@app.route('/firebase-init.js')
-def firebase_init_js():
-    return send_from_directory('frontend', 'firebase-init.js', mimetype='application/javascript')
-
-# This should already be your catch-all for frontend
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
+# === CATCH-ALL FRONTEND - MUST BE LAST ===
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
 def serve_frontend(path):
-    if path != "" and os.path.exists(os.path.join('frontend', path)):
-        return send_from_directory('frontend', path)
-    return send_from_directory('frontend', 'index.html')
-        
+    full_path = os.path.join(FRONTEND_DIR, path)
+    if path != "" and os.path.exists(full_path) and os.path.isfile(full_path):
+        return send_from_directory(FRONTEND_DIR, path)
+    # fallback to shop.html or index.html
+    if os.path.exists(os.path.join(FRONTEND_DIR, "shop.html")):
+        return send_from_directory(FRONTEND_DIR, "shop.html")
+    return send_from_directory(FRONTEND_DIR, "index.html")
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
