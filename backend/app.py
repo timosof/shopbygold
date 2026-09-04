@@ -434,13 +434,36 @@ const messaging = firebase.messaging();
 #         print("LIST ERROR:", e)
 #         return jsonify({"msg": f"Error: {str(e)}"}), 500
 
+from flask import request, jsonify
+
 @app.route('/api/save-fcm-token', methods=['POST'])
 def save_fcm_token():
-    data = request.get_json()
-    token = data.get('token')
-    print(f"New FCM Token: {token}")
-    # TODO: Save token to your DB here
-    return jsonify({"status": "saved"})
+    try:
+        data = request.get_json()
+        token = data.get('token')
+        
+        if not token:
+            return jsonify({"error": "No token provided"}), 400
+
+        # Check if token already exists
+        existing = FCMToken.query.filter_by(token=token).first()
+        if existing:
+            existing.updated_at = datetime.utcnow()
+            db.session.commit()
+            print(f"Token updated: {token[:20]}...")
+            return jsonify({"status": "updated"})
+
+        # Save new token
+        new_token = FCMToken(token=token)
+        db.session.add(new_token)
+        db.session.commit()
+        print(f"✅ New Token saved to DB: {token[:20]}...")
+        return jsonify({"status": "saved"})
+        
+    except Exception as e:
+        print(f"Error saving token: {e}")
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
     
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
