@@ -1,4 +1,5 @@
 import os
+from flask import send_from_directory
 from datetime import timedelta, datetime
 from dotenv import load_dotenv
 from flask import Flask, jsonify, send_from_directory, request
@@ -377,6 +378,11 @@ def delete_newsletter():
         db.session.delete(sub)
         db.session.commit()
     return jsonify({"msg":"Deleted"})
+
+# push notivation route
+@app.route('/firebase-messaging-sw.js')
+def firebase_sw():
+    return send_from_directory('.', 'firebase-messaging-sw.js', mimetype='application/javascript')
 
 # @app.route('/api/newsletter/list', methods=['GET'])
 # def list_newsletter():
