@@ -472,7 +472,22 @@ def save_fcm_token():
         print(f"Error saving token: {e}")
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-    
+
+@app.route('/api/admin/send-push', methods=['POST'])
+def admin_send_push():
+    try:
+        data = request.get_json()
+        title = data.get('title', 'ShopByGold')
+        body = data.get('body', '')
+        link = data.get('link', '/shop.html')
+        if not body:
+            return jsonify({"error": "Body required"}), 400
+        from utils.fcm import send_push_to_all
+        count = send_push_to_all(title, body, link)
+        return jsonify({"msg": f"Push sent to {count} devices", "count": count})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
