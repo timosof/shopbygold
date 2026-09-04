@@ -372,16 +372,16 @@ def update_order_status(order_id):
         print(f"Order #{order.id} delivered to {customer.email}")
 
     # Push - OUTSIDE the if, so it works for paid/shipped/delivered
-    try:
-        from utils.fcm import send_push_to_user
-        send_push_to_user(
-            user_id=order.user_id,
-            title=f"Order #{order.id} {new_status.upper()}",
-            body=f"Your order is now {new_status}",
-            link="/orders.html"
-        )
-    except Exception as e:
-        print(f"Push skipped: {e}")
+    # try:
+    #     from utils.fcm import send_push_to_user
+    #     send_push_to_user(
+    #         user_id=order.user_id,
+    #         title=f"Order #{order.id} {new_status.upper()}",
+    #         body=f"Your order is now {new_status}",
+    #         link="/orders.html"
+    #     )
+    # except Exception as e:
+    #     print(f"Push skipped: {e}")
 
     return jsonify({'msg': 'Status updated', 'order': order.to_dict()}), 200
 
