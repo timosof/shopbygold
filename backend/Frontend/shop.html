@@ -853,43 +853,27 @@
 
   async function requestPermission() {
     try {
-      console.log("Checking Service Worker...");
       const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
       await navigator.serviceWorker.ready;
-      console.log("SW ready");
-
       const permission = await Notification.requestPermission();
-      console.log("Permission:", permission);
-
       if (permission === 'granted') {
-  const token = await getToken(messaging, {
-    vapidKey: FIREBASE_CONFIG.vapidKey,
-    serviceWorkerRegistration: registration
-  });
-  console.log("✅ FCM Token:", token);
-
-  // Save to backend
-  const res = await fetch('/api/save-fcm-token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: token })
-  });
-  const result = await res.json();
-  console.log("DB Save result:", result);
-}
+        const token = await getToken(messaging, {
+          vapidKey: FIREBASE_CONFIG.vapidKey,
+          serviceWorkerRegistration: registration
+        });
+        console.log("✅ FCM Token:", token);
+        const res = await fetch('/api/save-fcm-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        console.log("DB Save result:", await res.json());
+      }
     } catch (err) {
       console.error("❌ FCM Error:", err);
     }
   }
-
   requestPermission();
-
-// After console.log("✅ FCM Token:", token);
-await fetch('/api/save-fcm-token', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ token: token })
-});
 </script>
     
     <!-- BOTTOM NAV - MOBILE ONLY -->
